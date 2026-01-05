@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Cameras Management - Crowd Sense AI</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#1b2733",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for better aesthetics in dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111a22;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #324d67;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #476887;
+        }
+
+        /* Bounding box simulation */
+        .bounding-box {
+            border: 2px solid #137fec;
+            background-color: rgba(19, 127, 236, 0.15);
+            position: absolute;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-body h-screen overflow-hidden flex">
+    <!-- Sidebar -->
+    <aside
+        class="w-64 bg-surface-light dark:bg-[#111a22] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-all duration-300">
+        <div class="flex flex-col h-full">
+            <div class="p-6">
+                <div class="flex flex-col">
+                    <h1
+                        class="text-slate-900 dark:text-white text-xl font-display font-bold leading-normal tracking-tight">
+                        Crowd Sense AI</h1>
+                    <p class="text-slate-500 dark:text-[#92adc9] text-xs font-normal leading-normal mt-1">Admin Console
+                        v2.4</p>
+                </div>
+            </div>
+            <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f2d3b] transition-colors group"
+                    href="dashboard.html">
+                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+                    <span class="text-sm font-medium leading-normal">Dashboard</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:text-white dark:bg-[#233648]"
+                    href="cameras.html">
+                    <span class="material-symbols-outlined text-primary dark:text-primary">videocam</span>
+                    <span class="text-sm font-medium leading-normal">Cameras</span>
+                </a>
+                <a id="nav-zones"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f2d3b] transition-colors group"
+                    href="zones.html">
+                    <span
+                        class="material-symbols-outlined group-hover:text-primary transition-colors">location_on</span>
+                    <span class="text-sm font-medium leading-normal">Zones</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f2d3b] transition-colors group"
+                    href="analytics.html">
+                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+                    <span class="text-sm font-medium leading-normal">Analytics</span>
+                </a>
+
+                <!-- Logout -->
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 transition-colors group mt-4">
+                    <span class="material-symbols-outlined group-hover:text-red-600">logout</span>
+                    <span class="text-sm font-medium leading-normal">Log Out</span>
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300">
+                    <div
+                        class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
+                        <span class="material-symbols-outlined text-sm">person</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <p class="text-sm font-medium leading-none" id="user-display">User</p>
+                        <p class="text-xs text-slate-500 dark:text-[#92adc9] mt-1" id="role-display">Role</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- Header -->
+        <header
+            class="h-auto shrink-0 px-6 py-6 border-b border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-[#101922] z-10">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex flex-col gap-1">
+                    <h2 class="text-slate-900 dark:text-white text-3xl font-display font-bold tracking-tight">Cameras
+                        Management</h2>
+                    <p class="text-slate-500 dark:text-[#92adc9] text-sm">Monitor live feeds and manage people counting
+                        streams.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="text" id="sourceInput" placeholder="Source (e.g. 0, video.mp4)"
+                        class="h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1b2733] text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-primary w-64 transition-colors" />
+
+                    <button onclick="startSystem()"
+                        class="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-emerald-500 hover:bg-emerald-600 transition-colors text-white text-sm font-bold shadow-lg shadow-emerald-500/20">
+                        <span class="material-symbols-outlined text-[20px]">play_circle</span>
+                        <span>Start System</span>
+                    </button>
+                    <button onclick="stopSystem()"
+                        class="flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-red-500 hover:bg-red-600 transition-colors text-white text-sm font-bold shadow-lg shadow-red-500/20">
+                        <span class="material-symbols-outlined text-[20px]">stop_circle</span>
+                        <span>Stop System</span>
+                    </button>
+                    <button
+                        class="hidden md:flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-primary hover:bg-blue-600 transition-colors text-white text-sm font-bold shadow-lg shadow-blue-500/20">
+                        <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                        <span>Add Cam</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Quick Stats Row -->
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <!-- Total Cameras -->
+                <div
+                    class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-[#1b2733] border border-slate-100 dark:border-slate-800">
+                    <div class="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                        <span class="material-symbols-outlined">videocam</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Cameras</p>
+                        <p id="stat-cameras" class="text-lg font-display font-bold text-slate-900 dark:text-white">--
+                        </p>
+                    </div>
+                </div>
+                <!-- Total Headcount -->
+                <div
+                    class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-[#1b2733] border border-slate-100 dark:border-slate-800">
+                    <div
+                        class="p-2 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                        <span class="material-symbols-outlined">groups</span>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Headcount</p>
+                        <p id="stat-headcount" class="text-lg font-display font-bold text-slate-900 dark:text-white">--
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto p-6 scroll-smooth">
+            <!-- Dynamic Camera Grid -->
+            <div id="cameras-grid"
+                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-[1600px] mx-auto pb-10">
+                <!-- Camera cards will be injected here -->
+                <!-- Camera cards will be injected here -->
+            </div>
+        </div>
+    </main>
+    <script>
+        const API_BASE = 'http://127.0.0.1:5001';
+
+        // --- Auth Check ---
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+        if (!token) window.location.href = 'login.html';
+
+        // --- RBAC Redirect ---
+        if (role !== 'admin') {
+            window.location.href = 'dashboard.html';
+        }
+
+        if (username) document.getElementById('user-display').innerText = username;
+        if (role) document.getElementById('role-display').innerText = role;
+
+        // --- RBAC Logic ---
+        if (role !== 'admin') {
+            const zonesLink = document.getElementById('nav-zones');
+            const settingsLink = document.getElementById('nav-settings');
+            if (zonesLink) zonesLink.classList.add('hidden');
+            if (settingsLink) settingsLink.classList.add('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+
+        async function updateCameras() {
+            try {
+                const res = await fetch(`${API_BASE}/get_count`);
+                const data = await res.json();
+
+                // Sync Grid Structure first (if cameras changed)
+                const grid = document.getElementById('cameras-grid');
+                const camIds = Object.keys(data.cameras);
+
+                // Remove stale cards
+                Array.from(grid.children).forEach(card => {
+                    const id = card.getAttribute('data-cam-id');
+                    if (id && !camIds.includes(id)) card.remove();
+                });
+
+                // Add/Update cards
+                camIds.forEach(id => {
+                    const cam = data.cameras[id];
+                    let card = document.querySelector(`div[data-cam-id="${id}"]`);
+
+                    if (!card) {
+                        // Create Card (One-time)
+                        const div = document.createElement('div');
+                        div.className = "flex flex-col bg-white dark:bg-[#1b2733] rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-800 group hover:border-primary/50 transition-all duration-300";
+                        div.setAttribute('data-cam-id', id);
+                        div.innerHTML = `
+                        <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center bg-slate-50 dark:bg-[#1f2d3b]">
+                             <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <div>
+                                    <h3 class="text-sm font-display font-bold text-slate-900 dark:text-white">Camera ${parseInt(id) + 1}</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Source: ${cam.source}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">Live</span>
+                            </div>
+                        </div>
+                        <div class="relative aspect-video bg-black group-hover:opacity-100 transition-opacity">
+                            <!-- MJPEG STREAM SOURCE -->
+                            <img src="${API_BASE}/video_feed/${id}" class="absolute inset-0 w-full h-full object-cover" alt="Camera Feed">
+                            <div class="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-xs text-white font-mono">
+                                <span class="text-emerald-400">●</span> <span id="fps-${id}">${cam.fps}</span>fps <span class="mx-1 text-slate-500">|</span> ${cam.resolution}
+                            </div>
+                        </div>
+                        <div class="p-3 flex items-center justify-between gap-3 bg-white dark:bg-[#1b2733]">
+                           <div class="flex gap-2 w-full">
+                                <button class="flex-1 flex items-center justify-center gap-2 h-9 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm font-medium transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">stop_circle</span> Stop
+                                </button>
+                                <button class="flex-1 flex items-center justify-center gap-2 h-9 rounded bg-primary/10 hover:bg-primary/20 text-primary dark:text-blue-400 text-sm font-medium transition-colors border border-primary/20">
+                                    <span class="material-symbols-outlined text-[18px]">settings</span> Config
+                                </button>
+                            </div>
+                        </div>`;
+                        grid.appendChild(div);
+                        card = div;
+                    }
+
+                    // Update FPS only (Image stream handles itself)
+                    const fpsEl = card.querySelector(`span#fps-${id}`);
+                    if (fpsEl) fpsEl.innerText = cam.fps;
+                });
+
+                // Update Stats
+                // Update Stats
+                const statCameras = document.getElementById('stat-cameras');
+                const statHeadcount = document.getElementById('stat-headcount');
+
+                if (statCameras) statCameras.innerText = Object.keys(data.cameras).length;
+                if (statHeadcount) statHeadcount.innerText = data.people_count || 0;
+
+            } catch (e) {
+                console.error("Fetch Error", e);
+            }
+        }
+
+        // --- System Control ---
+        async function startSystem() {
+            const btn = document.querySelector('button.bg-emerald-500');
+            const sourceInput = document.getElementById('sourceInput');
+            const sourceVal = sourceInput.value.trim();
+
+            if (!sourceVal) {
+                alert("Please provide a valid source (e.g., '0' for webcam, or a video path).");
+                return;
+            }
+
+            const original = btn.innerHTML;
+            btn.innerText = 'Starting...';
+
+            try {
+                const res = await fetch(`${API_BASE}/admin/system/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ source: sourceVal })
+                });
+                const d = await res.json();
+                alert(d.message || d.msg); // Handle both keys
+                if (res.ok) updateCameras();
+            } catch (e) {
+                console.error(e);
+                alert("Backend Error - Ensure Server is Running");
+            } finally {
+                btn.innerHTML = original;
+            }
+        }
+
+        async function stopSystem() {
+            const btn = document.querySelector('button.bg-red-500');
+            const original = btn.innerHTML;
+            btn.innerText = 'Stopping...';
+
+            try {
+                const res = await fetch(`${API_BASE}/admin/system/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const d = await res.json();
+                alert(d.message || d.msg); // Handle both keys
+                if (res.ok) updateCameras();
+            } catch (e) { console.error(e); } finally {
+                btn.innerHTML = original;
+            }
+        }
+
+        updateCameras();
+        updateCameras();
+        setInterval(updateCameras, 200); // Poll every 200ms (5 FPS)
+    </script>
+</body>
+
+</html>

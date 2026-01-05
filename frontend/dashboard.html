@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Crowd Sense AI Dashboard</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Theme Config -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#1c2630", // Slightly lighter than bg-dark for cards
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for dark mode dashboards */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #101922;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2d3b4e;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3e4f66;
+        }
+    </style>
+</head>
+
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white overflow-hidden">
+    <div class="relative flex h-screen w-full overflow-hidden">
+        <!-- Sidebar -->
+        <aside
+            class="w-64 flex-shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111a22]">
+            <div class="flex h-full flex-col justify-between p-4">
+                <div class="flex flex-col gap-6">
+                    <!-- Brand -->
+                    <div class="flex items-center gap-3 px-2">
+                        <div class="bg-primary/20 flex items-center justify-center rounded-lg size-10">
+                            <span class="material-symbols-outlined text-primary" style="font-size: 24px;">groups</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <h1 class="text-slate-900 dark:text-white text-lg font-bold leading-none">Crowd Sense AI
+                            </h1>
+                            <p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Admin Console</p>
+                        </div>
+                    </div>
+                    <!-- Navigation -->
+                    <div class="flex flex-col gap-2">
+                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white shadow-lg shadow-primary/20 transition-all"
+                            href="dashboard.html">
+                            <span class="material-symbols-outlined text-white" style="font-size: 20px;">dashboard</span>
+                            <p class="text-sm font-semibold leading-normal">Dashboard</p>
+                        </a>
+                        <a id="nav-cameras"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1c2630] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors group"
+                            href="cameras.html">
+                            <span class="material-symbols-outlined group-hover:text-primary transition-colors"
+                                style="font-size: 20px;">videocam</span>
+                            <p class="text-sm font-medium leading-normal">Cameras</p>
+                        </a>
+                        <a id="nav-zones"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1c2630] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors group"
+                            href="zones.html">
+                            <span class="material-symbols-outlined group-hover:text-primary transition-colors"
+                                style="font-size: 20px;">location_on</span>
+                            <p class="text-sm font-medium leading-normal">Zones</p>
+                        </a>
+                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1c2630] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors group"
+                            href="analytics.html">
+                            <span class="material-symbols-outlined group-hover:text-primary transition-colors"
+                                style="font-size: 20px;">analytics</span>
+                            <p class="text-sm font-medium leading-normal">Analytics</p>
+                        </a>
+
+                        <!-- Logout Button -->
+                        <button onclick="logout()"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors group mt-4">
+                            <span
+                                class="material-symbols-outlined group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors"
+                                style="font-size: 20px;">logout</span>
+                            <p class="text-sm font-medium leading-normal">Log Out</p>
+                        </button>
+                    </div>
+                </div>
+                <!-- User Profile Bottom -->
+                <div
+                    class="flex items-center gap-3 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#1c2630]">
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 ring-2 ring-slate-200 dark:ring-slate-700"
+                        data-alt="Profile picture of the admin user"
+                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBqa8JATUAUbNYCl7jSW3p5oza7wWJxgWYafvHlKRLlp0-zFowU1QFbeV9l8hrBKb5FFDGuJOzz5uH3GjQwLsuRT502k8_DOgVtTlmSt2V0AXmugyG7IbMd9f0gk0tHQtrtzLN6OLH4-GKEXMbxqY0mrQO-ZunkSv0EZ8qItuiIcpuqmgMS2eVpDBcKRltT0okZNO4ww7oQYIZ3waAHcgBlus-J5Doe9QQMSCjVL60FF1W5qa_HtX_-oHjH3VixVliST2otajvwZw");'>
+                    </div>
+                    <div class="flex flex-col overflow-hidden">
+                        <p class="text-slate-900 dark:text-white text-sm font-bold truncate">Sarah Chen</p>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs truncate">System Admin</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-y-auto bg-background-light dark:bg-background-dark">
+            <!-- Top Header -->
+            <header
+                class="sticky top-0 z-20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-transparent">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Live Overview</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Real-time crowd analysis and occupancy metrics
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button
+                        class="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1c2630] text-slate-600 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors">
+                        <span class="material-symbols-outlined">search</span>
+                    </button>
+                    <button
+                        class="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1c2630] text-slate-600 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors relative">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span
+                            class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-white dark:border-[#1c2630]"></span>
+                    </button>
+                    <button onclick="downloadReport()"
+                        class="hidden md:flex items-center gap-2 px-4 h-10 bg-primary hover:bg-blue-600 text-white text-sm font-bold rounded-lg transition-colors shadow-lg shadow-primary/25">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+                        Export Report
+                    </button>
+                </div>
+            </header>
+            <div class="p-6 flex flex-col gap-6 max-w-[1600px] w-full mx-auto">
+                <!-- KPI Stats Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Stat 1 -->
+                    <!-- Stat 1: Live Occupancy -->
+                    <div
+                        class="flex flex-col justify-between p-5 rounded-xl bg-white dark:bg-[#1c2630] border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">
+                                    Live Occupancy</p>
+                                <h3 id="kpi-live" class="text-slate-900 dark:text-white text-4xl font-bold">--</h3>
+                            </div>
+                            <div
+                                class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                                <span class="material-symbols-outlined">groups</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <span
+                                class="flex items-center text-emerald-500 text-sm font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span> Live
+                            </span>
+                            <span class="text-slate-400 text-sm">Active Now</span>
+                        </div>
+                    </div>
+
+                    <!-- Stat 2: Total Visitors -->
+                    <div
+                        class="flex flex-col justify-between p-5 rounded-xl bg-white dark:bg-[#1c2630] border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">
+                                    Total Visitors</p>
+                                <h3 id="kpi-visitors" class="text-slate-900 dark:text-white text-4xl font-bold">--</h3>
+                            </div>
+                            <div
+                                class="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                                <span class="material-symbols-outlined">directions_walk</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <span class="text-slate-400 text-sm">Since System Start</span>
+                        </div>
+                    </div>
+
+                    <!-- Stat 3: Alerts -->
+                    <div
+                        class="flex flex-col justify-between p-5 rounded-xl bg-white dark:bg-[#1c2630] border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">
+                                    Critical Alerts</p>
+                                <h3 id="kpi-alerts" class="text-slate-900 dark:text-white text-4xl font-bold">--</h3>
+                            </div>
+                            <div
+                                class="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+                                <span class="material-symbols-outlined">warning</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <span class="text-orange-500 text-sm font-bold bg-orange-500/10 px-2 py-0.5 rounded"
+                                id="alert-tag">
+                                --
+                            </span>
+                            <span class="text-slate-400 text-sm">recent</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Middle Section: Chart + Zones -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Line Chart Container -->
+                    <div
+                        class="lg:col-span-2 flex flex-col p-6 rounded-xl bg-white dark:bg-[#1c2630] border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px]">
+                        <div class="flex flex-wrap justify-between items-center mb-6 gap-4">
+                            <div>
+                                <h3 class="text-slate-900 dark:text-white text-lg font-bold">Occupancy Trend</h3>
+                                <p class="text-slate-500 dark:text-slate-400 text-sm">Live data (Continuous)</p>
+                            </div>
+                            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                                <button
+                                    class="px-3 py-1 rounded bg-white dark:bg-[#1c2630] shadow text-xs font-bold text-slate-900 dark:text-white">Live</button>
+                                <button
+                                    class="px-3 py-1 rounded text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">1H</button>
+                                <button
+                                    class="px-3 py-1 rounded text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">24H</button>
+                            </div>
+                        </div>
+                        <!-- Chart SVG -->
+                        <!-- Chart Canvas -->
+                        <div class="flex-1 w-full relative flex items-end justify-center" style="min-height: 280px;">
+                            <canvas id="mainTrendChart"></canvas>
+                        </div>
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    </div>
+                    <!-- Zone Overview List -->
+                    <div
+                        class="flex flex-col p-6 rounded-xl bg-white dark:bg-[#1c2630] border border-slate-200 dark:border-slate-800 shadow-sm h-full">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-slate-900 dark:text-white text-lg font-bold">Zone Overview</h3>
+                            <button class="text-primary text-sm font-bold hover:underline">View Map</button>
+                        </div>
+                        <div class="flex flex-col gap-5 flex-1 overflow-y-auto pr-2">
+                            <!-- Zone Item 1 -->
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <div class="size-2 rounded-full bg-emerald-500"></div>
+                                        <p class="text-slate-900 dark:text-white font-medium text-sm">Main Entrance Hall
+                                        </p>
+                                    </div>
+                                    <p class="text-slate-900 dark:text-white font-bold text-sm">84 <span
+                                            class="text-slate-500 font-normal">/ 120</span></p>
+                                </div>
+                                <div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full" style="width: 70%"></div>
+                                </div>
+                            </div>
+                            <!-- Zone Item 2 -->
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <div class="size-2 rounded-full bg-emerald-500"></div>
+                                        <p class="text-slate-900 dark:text-white font-medium text-sm">Cafeteria Area</p>
+                                    </div>
+                                    <p class="text-slate-900 dark:text-white font-bold text-sm">112 <span
+                                            class="text-slate-500 font-normal">/ 200</span></p>
+                                </div>
+                                <div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-emerald-500 rounded-full" style="width: 56%"></div>
+                                </div>
+                            </div>
+                            <!-- Zone Item 3 -->
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <div class="size-2 rounded-full bg-yellow-500"></div>
+                                        <p class="text-slate-900 dark:text-white font-medium text-sm">East Wing Corridor
+                                        </p>
+                                    </div>
+                                    <p class="text-slate-900 dark:text-white font-bold text-sm">45 <span
+                                            class="text-slate-500 font-normal">/ 50</span></p>
+                                </div>
+                                <div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-yellow-500 rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <!-- Zone Item 4 -->
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <div class="size-2 rounded-full bg-emerald-500"></div>
+                                        <p class="text-slate-900 dark:text-white font-medium text-sm">Meeting Room B</p>
+                                    </div>
+                                    <p class="text-slate-900 dark:text-white font-bold text-sm">8 <span
+                                            class="text-slate-500 font-normal">/ 15</span></p>
+                                </div>
+                                <div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-emerald-500 rounded-full" style="width: 53%"></div>
+                                </div>
+                            </div>
+                            <!-- Zone Item 5 -->
+                            <div class="flex flex-col gap-2">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <div class="size-2 rounded-full bg-red-500"></div>
+                                        <p class="text-slate-900 dark:text-white font-medium text-sm">Server Room Access
+                                        </p>
+                                    </div>
+                                    <p class="text-slate-900 dark:text-white font-bold text-sm">3 <span
+                                            class="text-slate-500 font-normal">/ 2</span></p>
+                                </div>
+                                <div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                    <div class="h-full bg-red-500 rounded-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Bottom Section: Bar Chart -->
+                <div
+                    class="flex flex-col p-6 rounded-xl bg-white dark:bg-[#1c2630] border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-slate-900 dark:text-white text-lg font-bold">Activity Distribution</h3>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm">Real-time heatmap activity per zone
+                            </p>
+                        </div>
+                        <button
+                            class="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+                            Filter
+                            <span class="material-symbols-outlined" style="font-size: 18px;">filter_list</span>
+                        </button>
+                    </div>
+                    <!-- CSS Bar Chart -->
+                    <div class="w-full h-48 flex items-end justify-between gap-2 sm:gap-4 md:gap-8 px-2">
+                        <!-- Bar 1 -->
+                        <div class="group flex flex-col items-center gap-2 flex-1 h-full justify-end cursor-pointer">
+                            <div
+                                class="relative w-full bg-primary/20 dark:bg-primary/10 rounded-t-sm hover:bg-primary/30 transition-all h-[40%] group-hover:h-[42%]">
+                                <div
+                                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    Entry A: 120</div>
+                                <div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[60%]"></div>
+                            </div>
+                            <span class="text-xs font-medium text-slate-500 truncate w-full text-center">Entry A</span>
+                        </div>
+                        <!-- Bar 2 -->
+                        <div class="group flex flex-col items-center gap-2 flex-1 h-full justify-end cursor-pointer">
+                            <div
+                                class="relative w-full bg-primary/20 dark:bg-primary/10 rounded-t-sm hover:bg-primary/30 transition-all h-[75%] group-hover:h-[77%]">
+                                <div
+                                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    Lobby: 245</div>
+                                <div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[80%]"></div>
+                            </div>
+                            <span class="text-xs font-medium text-slate-500 truncate w-full text-center">Lobby</span>
+                        </div>
+                        <!-- Bar 3 -->
+                        <div class="group flex flex-col items-center gap-2 flex-1 h-full justify-end cursor-pointer">
+                            <div
+                                class="relative w-full bg-primary/20 dark:bg-primary/10 rounded-t-sm hover:bg-primary/30 transition-all h-[30%] group-hover:h-[32%]">
+                                <div
+                                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    Hall 1: 80</div>
+                                <div class="absolute bottom-0 w-full bg-emerald-500 rounded-t-sm h-[50%]"></div>
+                            </div>
+                            <span class="text-xs font-medium text-slate-500 truncate w-full text-center">Hall 1</span>
+                        </div>
+                        <!-- Bar 4 -->
+                        <div class="group flex flex-col items-center gap-2 flex-1 h-full justify-end cursor-pointer">
+                            <div
+                                class="relative w-full bg-primary/20 dark:bg-primary/10 rounded-t-sm hover:bg-primary/30 transition-all h-[55%] group-hover:h-[57%]">
+                                <div
+                                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    Cafeteria: 160</div>
+                                <div class="absolute bottom-0 w-full bg-emerald-500 rounded-t-sm h-[70%]"></div>
+                            </div>
+                            <span
+                                class="text-xs font-medium text-slate-500 truncate w-full text-center">Cafeteria</span>
+                        </div>
+                        <!-- Bar 5 -->
+                        <div class="group flex flex-col items-center gap-2 flex-1 h-full justify-end cursor-pointer">
+                            <div
+                                class="relative w-full bg-primary/20 dark:bg-primary/10 rounded-t-sm hover:bg-primary/30 transition-all h-[20%] group-hover:h-[22%]">
+                                <div
+                                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    Parking: 45</div>
+                                <div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[40%]"></div>
+                            </div>
+                            <span class="text-xs font-medium text-slate-500 truncate w-full text-center">Parking</span>
+                        </div>
+                        <!-- Bar 6 -->
+                        <div class="group flex flex-col items-center gap-2 flex-1 h-full justify-end cursor-pointer">
+                            <div
+                                class="relative w-full bg-primary/20 dark:bg-primary/10 rounded-t-sm hover:bg-primary/30 transition-all h-[90%] group-hover:h-[92%]">
+                                <div
+                                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    Main Stage: 310</div>
+                                <div class="absolute bottom-0 w-full bg-yellow-500 rounded-t-sm h-[85%]"></div>
+                            </div>
+                            <span class="text-xs font-medium text-slate-500 truncate w-full text-center">Main
+                                Stage</span>
+                        </div>
+                        <!-- Bar 7 -->
+                        <div class="group flex flex-col items-center gap-2 flex-1 h-full justify-end cursor-pointer">
+                            <div
+                                class="relative w-full bg-primary/20 dark:bg-primary/10 rounded-t-sm hover:bg-primary/30 transition-all h-[15%] group-hover:h-[17%]">
+                                <div
+                                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    Backstage: 20</div>
+                                <div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[30%]"></div>
+                            </div>
+                            <span
+                                class="text-xs font-medium text-slate-500 truncate w-full text-center">Backstage</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <!-- Logic -->
+    <script>
+        const API_BASE = 'http://127.0.0.1:5001';
+
+        // --- Auth Check ---
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+        if (!token) window.location.href = 'login.html';
+
+        // --- RBAC Logic ---
+        if (role !== 'admin') {
+            const zonesLink = document.getElementById('nav-zones');
+            const settingsLink = document.getElementById('nav-settings');
+            const camerasLink = document.getElementById('nav-cameras');
+            if (zonesLink) zonesLink.classList.add('hidden');
+            if (settingsLink) settingsLink.classList.add('hidden');
+            if (camerasLink) camerasLink.classList.add('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+
+        // --- Chart Init ---
+        let mainTrendChart;
+        const ctx = document.getElementById('mainTrendChart').getContext('2d');
+
+        // Gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(19, 127, 236, 0.4)');
+        gradient.addColorStop(1, 'rgba(19, 127, 236, 0.0)');
+
+        mainTrendChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Occupancy',
+                    data: [],
+                    borderColor: '#137fec',
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 8, maxRotation: 0 }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
+                        ticks: { color: '#94a3b8', precision: 0 }
+                    }
+                },
+                elements: {
+                    line: { tension: 0.4 }, // Smooth curves
+                    point: { radius: 0, hitRadius: 10 } // Hide cluttering dots
+                },
+                interaction: { intersect: false, mode: 'index' }
+            }
+        });
+
+        // --- Fetch Historical Data for Chart ---
+        async function initChart() {
+            try {
+                const res = await fetch(`${API_BASE}/analytics/data`);
+                if (res.ok) {
+                    const analytics = await res.json();
+                    if (analytics.data && analytics.data.length > 0) {
+                        // Show ALL available history (or session start)
+                        mainTrendChart.data.labels = analytics.labels;
+                        mainTrendChart.data.datasets[0].data = analytics.data;
+                        mainTrendChart.update();
+                    }
+                }
+            } catch (e) { console.error("Chart Init Error", e); }
+        }
+
+        // --- Audio Alarm ---
+        const alertSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); // Simple Beep
+        alertSound.volume = 0.5;
+        let lastAlertCount = -1; // Init
+
+        // --- Data Loop ---
+        async function updateDashboard() {
+            try {
+                const res = await fetch(`${API_BASE}/get_count`);
+                const data = await res.json();
+
+                // 1. Counters
+                // Live Occupancy
+                const kpiLive = document.getElementById('kpi-live');
+                if (kpiLive) kpiLive.innerText = data.people_count || 0;
+
+                // Total Visitors
+                const kpiVisitors = document.getElementById('kpi-visitors');
+                if (kpiVisitors) kpiVisitors.innerText = data.total_visitors || 0;
+
+                // Critical Alerts
+                const alerts = data.alert_count || 0;
+                const kpiAlerts = document.getElementById('kpi-alerts');
+                if (kpiAlerts) kpiAlerts.innerText = alerts;
+
+                // Update alert visual tag
+                const alertTag = document.getElementById('alert-tag');
+                if (alertTag) alertTag.innerText = `+${alerts} new`;
+
+                // PLAY SOUND IF NEW ALERT
+                if (lastAlertCount !== -1 && alerts > lastAlertCount) {
+                    try {
+                        alertSound.currentTime = 0;
+                        alertSound.play();
+                    } catch (e) { console.warn("Audio Play Blocked", e); }
+                }
+                lastAlertCount = alerts;
+
+                // 2. Chart Live Update (Push only if new)
+                const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: "2-digit", minute: "2-digit" });
+                const lastLabel = mainTrendChart.data.labels[mainTrendChart.data.labels.length - 1];
+
+                if (lastLabel !== now) {
+                    mainTrendChart.data.labels.push(now);
+                    mainTrendChart.data.datasets[0].data.push(data.people_count);
+
+                    // Optional: Sliding Window (Keep chart readable)
+                    if (mainTrendChart.data.labels.length > 50) {
+                        mainTrendChart.data.labels.shift();
+                        mainTrendChart.data.datasets[0].data.shift();
+                    }
+
+                    mainTrendChart.update('none');
+                }
+
+                // 3. Zone Overview List & Activity Distribution Bars
+                const zoneList = document.querySelector('.flex-col.gap-5.flex-1.overflow-y-auto');
+                const activityChart = document.querySelector('.w-full.h-48.flex.items-end'); // Activity Dist container
+
+                if (data.zones) {
+                    let htmlList = '';
+                    let htmlBars = '';
+
+                    // Flatten zones
+                    let zones = [];
+                    if (Array.isArray(data.zones)) zones = data.zones;
+                    else Object.values(data.zones).forEach(z => zones.push(...z));
+
+                    zones.forEach(z => {
+                        const threshold = z.threshold || 20;
+                        const pct = Math.min(100, (z.count / threshold) * 100);
+                        let color = 'bg-emerald-500'; // Green
+                        let colorHex = '#10b981';
+
+                        // Simple Logic: > 80% = Red, > 50% = Yellow
+                        if (z.count > threshold * 0.9) { color = 'bg-red-500'; colorHex = '#ef4444'; }
+                        else if (z.count > threshold * 0.6) { color = 'bg-yellow-500'; colorHex = '#eab308'; }
+
+                        // List Item
+                        htmlList += `
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <div class="size-2 rounded-full ${color}"></div>
+                                    <p class="text-slate-900 dark:text-white font-medium text-sm">${z.name}</p>
+                                </div>
+                                <p class="text-slate-900 dark:text-white font-bold text-sm">${z.count} <span class="text-slate-500 font-normal">/ ${threshold}</span></p>
+                            </div>
+                            <div class="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div class="h-full ${color} rounded-full" style="width: ${pct}%"></div>
+                            </div>
+                        </div>`;
+
+                        // Bar Item
+                        htmlBars += `
+                        <div class="group flex flex-col items-center gap-2 flex-1 h-full justify-end cursor-pointer">
+                            <div class="relative w-full bg-primary/20 dark:bg-primary/10 rounded-t-sm hover:bg-primary/30 transition-all group-hover:bg-primary/20" style="height: ${Math.max(10, pct)}%">
+                                <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    ${z.name}: ${z.count}</div>
+                                <div class="absolute bottom-0 w-full rounded-t-sm" style="height: ${pct}%; background-color: ${colorHex}"></div>
+                            </div>
+                            <span class="text-xs font-medium text-slate-500 truncate w-full text-center">${z.name}</span>
+                        </div>`;
+                    });
+
+                    if (zoneList) zoneList.innerHTML = htmlList;
+                    if (activityChart) activityChart.innerHTML = htmlBars;
+                }
+
+            } catch (e) { console.error("Data Fetch Error", e); }
+        }
+
+        // --- Download Report ---
+        async function downloadReport() {
+            try {
+                const btn = document.querySelector('button[onclick="downloadReport()"]');
+                const originalText = btn.innerText;
+                btn.innerText = "Downloading...";
+
+                const res = await fetch(`${API_BASE}/admin/export?format=pdf`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "CrowdSense_Report.pdf";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    alert("Export Failed");
+                }
+                btn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 20px;">download</span> Export Report`;
+            } catch (e) {
+                console.error("Download Error", e);
+                alert("Error downloading report");
+            }
+        }
+
+        // Init
+        initChart();
+        updateDashboard();
+        setInterval(updateDashboard, 2000); // 2s refresh
+
+    </script>
+</body>
+
+</html>

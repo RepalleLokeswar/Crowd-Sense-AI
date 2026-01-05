@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Zones Management - Crowd Sense AI</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind Config -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "surface-dark": "#18232e",
+                        "border-dark": "#233648"
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #111a22;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #324d67;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #137fec;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden flex flex-col h-screen">
+    <!-- Top Navigation -->
+    <header
+        class="flex-none flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark px-6 py-3">
+        <div class="flex items-center gap-4">
+            <div class="text-primary size-8 flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl">grid_view</span>
+            </div>
+            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Crowd Sense AI</h2>
+        </div>
+        <div class="flex flex-1 justify-end gap-8 items-center">
+            <nav class="hidden md:flex items-center gap-6">
+                <a class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors"
+                    href="dashboard.html">Dashboard</a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors"
+                    href="cameras.html">Cameras</a>
+                <a class="text-primary text-sm font-medium" href="zones.html">Zones</a>
+                <a class="text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium transition-colors"
+                    href="analytics.html">Analytics</a>
+
+            </nav>
+            <div class="h-8 w-[1px] bg-slate-200 dark:bg-border-dark mx-2"></div>
+            <div class="flex items-center gap-3">
+                <div class="bg-center bg-no-repeat bg-cover rounded-full size-9 border-2 border-slate-200 dark:border-border-dark"
+                    data-alt="User profile avatar image"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCB3w7wDov9_gEHbv7WVNdf47vgxlGljO8hf9NNA9Y4CfnVfEaKSfQ8w2OmaAWXlo9hFebHc5wCHEj41N6tkJRxP1rq_3g5Aw-00551RR3TtV4rbqSCsovqdNH4S3ZRDhlymOdLzwylQhgn22WzCHXorbYix_x81E8isw9ogB9upf9ltTFXVevjJE3uvtOLSJbEFKtI8UiTVtX5d0Mnkl5YQV-bK-uwB7UrUWkCH66GZal1E7HimVOShHRkAk69I2zWOGu__BxR8A");'>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Main Layout -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar: Zone List -->
+        <aside
+            class="w-80 flex-none flex flex-col border-r border-slate-200 dark:border-border-dark bg-white dark:bg-surface-dark overflow-y-auto">
+            <div class="p-5 border-b border-slate-200 dark:border-border-dark">
+                <h3 class="text-xl font-bold mb-1">Zone List</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs">Manage detection areas</p>
+            </div>
+            <div class="p-4 space-y-3 flex-1">
+                <!-- Zones will be rendered here by JS -->
+                <div class="text-center text-slate-500 mt-10 text-sm">Loading zones...</div>
+            </div>
+            <!-- New Zone Button -->
+            <div class="p-4 border-t border-slate-200 dark:border-border-dark mt-auto">
+                <button onclick="startDrawing()"
+                    class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary py-3 px-4 text-sm font-bold transition-colors">
+                    <span class="material-symbols-outlined">add</span>
+                    Create New Zone
+                </button>
+            </div>
+        </aside>
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col relative min-w-0">
+            <!-- Action Toolbar -->
+            <div
+                class="flex flex-wrap items-center justify-between gap-4 p-4 border-b border-slate-200 dark:border-border-dark bg-white/50 dark:bg-surface-dark/50 backdrop-blur-sm z-10">
+                <div class="flex items-center gap-4">
+                    <div class="relative min-w-[240px]">
+                        <label class="sr-only">Select Camera</label>
+                        <div
+                            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500 dark:text-slate-400">
+                            <span class="material-symbols-outlined">videocam</span>
+                        </div>
+                        <select id="cam-select"
+                            class="pl-10 pr-10 w-full h-10 rounded-lg bg-slate-50 dark:bg-[#101922] border border-slate-200 dark:border-border-dark text-sm font-medium focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
+                            <option value="0">Loading...</option>
+                        </select>
+                        <div
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500 dark:text-slate-400">
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </div>
+                    </div>
+                    <div
+                        class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                        <span class="relative flex h-2 w-2">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Live Feed
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="btn-redraw-top" onclick="startRedraw()"
+                        class="flex items-center gap-2 px-4 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                        Redraw Geometry
+                    </button>
+                    <button id="btn-save-top"
+                        class="flex items-center gap-2 px-5 py-2 rounded-lg bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 text-sm font-bold transition-all transform active:scale-95">
+                        <span class="material-symbols-outlined text-[18px]">save</span>
+                        Save Configuration
+                    </button>
+                </div>
+            </div>
+            <!-- Video Canvas Container -->
+            <div class="flex-1 bg-background-dark relative flex items-center justify-center p-4 sm:p-8 overflow-hidden">
+                <!-- Grid Background Pattern -->
+                <div class="absolute inset-0 opacity-[0.03]"
+                    style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;">
+                </div>
+                <!-- Video Player Wrapper -->
+                <div
+                    class="relative w-full max-w-5xl aspect-video bg-black rounded-lg shadow-2xl border border-slate-700 overflow-hidden group">
+                    <!-- Live Video Feed (MJPEG) -->
+                    <img id="live-feed-img"
+                        class="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+                        src="http://127.0.0.1:5001/video_feed/0" alt="Live Camera Feed"
+                        onerror="this.style.display='none'; document.getElementById('feed-placeholder').style.display='flex';"
+                        onload="this.style.display='block'; document.getElementById('feed-placeholder').style.display='none';" />
+
+                    <!-- Fallback/Loading Placeholder -->
+                    <div id="feed-placeholder"
+                        class="absolute inset-0 flex items-center justify-center bg-slate-900 text-slate-500 hidden">
+                        <div class="text-center">
+                            <span class="material-symbols-outlined text-4xl mb-2">videocam_off</span>
+                            <p>Feed Unavailable</p>
+                        </div>
+                    </div>
+                    <!-- SVG Overlay Layer -->
+                    <svg class="absolute inset-0 w-full h-full cursor-crosshair" viewbox="0 0 640 360"
+                        xmlns="http://www.w3.org/2000/svg">
+                    </svg>
+                    <!-- Drawing Tools Floating Bar -->
+                    <div
+                        class="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1 p-1.5 bg-background-dark/90 backdrop-blur-md rounded-xl border border-slate-700 shadow-xl">
+
+                        <button id="btn-draw-poly"
+                            class="p-2.5 rounded-lg text-primary bg-primary/20 ring-1 ring-primary/50 transition-colors relative group/tooltip">
+                            <span class="material-symbols-outlined">crop_square</span>
+                            <span
+                                class="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Draw
+                                Rectangle</span>
+                        </button>
+
+                        <div class="w-[1px] h-6 bg-slate-700 mx-1"></div>
+                        <button id="btn-undo"
+                            class="p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors relative group/tooltip">
+                            <span class="material-symbols-outlined">undo</span>
+                            <span
+                                class="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Undo</span>
+                        </button>
+                        <button id="btn-clear-all"
+                            class="p-2.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors relative group/tooltip">
+                            <span class="material-symbols-outlined">delete_forever</span>
+                            <span
+                                class="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover/tooltip:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">Clear
+                                All</span>
+                        </button>
+                    </div>
+                    <!-- Bottom Right Info Overlay -->
+                    <div id="res-display"
+                        class="absolute bottom-4 right-4 bg-black/70 backdrop-blur px-3 py-1.5 rounded text-xs font-mono text-slate-300 border border-white/10">
+                        640x360 • Live
+                    </div>
+                </div>
+                <!-- Properties Panel (Floating or Context Sensitive) -->
+                <div id="properties-panel"
+                    class="absolute top-4 right-4 w-72 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300 hidden lg:block">
+                    <div
+                        class="flex items-center justify-between p-3 border-b border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-black/20">
+                        <span class="text-sm font-bold">Properties: Restricted Area</span>
+                        <button onclick="document.getElementById('properties-panel').classList.add('hidden')"
+                            class="text-slate-400 hover:text-white"><span
+                                class="material-symbols-outlined text-lg">close</span></button>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div class="space-y-1">
+                            <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Zone Name</label>
+                            <input id="prop-name"
+                                class="w-full h-9 px-3 rounded-md bg-white dark:bg-[#101922] border border-slate-200 dark:border-border-dark text-sm focus:ring-1 focus:ring-primary focus:border-primary"
+                                type="text" value="New Zone" />
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-medium text-slate-500 dark:text-slate-400">Max Capacity
+                                (Threshold)</label>
+                            <input id="prop-threshold"
+                                class="w-full h-9 px-3 rounded-md bg-white dark:bg-[#101922] border border-slate-200 dark:border-border-dark text-sm focus:ring-1 focus:ring-primary focus:border-primary"
+                                type="number" min="1" value="10" />
+                        </div>
+                        <div class="pt-2 border-t border-slate-200 dark:border-border-dark">
+                            <button onclick="startRedraw()"
+                                class="w-full mb-2 py-2 rounded-md bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors">
+                                <span class="material-symbols-outlined text-[16px] align-middle mr-1">edit_square</span>
+                                Redraw Geometry
+                            </button>
+                            <button
+                                onclick="if(activeZone) { activeZone = null; renderSidebar(); renderOverlay(); updatePropertiesPanel(); }"
+                                class="w-full py-2 rounded-md border border-slate-200 dark:border-border-dark text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                                Close Selection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        const API_BASE = 'http://127.0.0.1:5001';
+        let zones = [];
+        let activeZone = null;
+
+        // --- Auth Check ---
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role'); // Fix: Declare role
+        if (!token) window.location.href = 'login.html';
+
+        // --- RBAC Redirect ---
+        if (role !== 'admin') {
+            window.location.href = 'dashboard.html';
+        }
+
+        let nativeW = 640;
+        let nativeH = 360;
+
+        // --- Load Cameras ---
+        async function loadCameras() {
+            try {
+                // We use the dashboard data which has live cameras
+                const res = await fetch(`${API_BASE}/latest_stats`);
+                const data = await res.json();
+                const cams = data.cameras || {};
+
+                const select = document.getElementById('cam-select');
+                if (!select) return;
+
+                const currentVal = select.value;
+
+                // Track resolution for current source
+                if (cams[currentVal]) {
+                    const resStr = cams[currentVal].resolution; // "640x360"
+                    const fps = cams[currentVal].fps || 30;
+                    if (resStr) {
+                        const parts = resStr.split('x');
+                        if (parts.length === 2) {
+                            nativeW = parseInt(parts[0]);
+                            nativeH = parseInt(parts[1]);
+                        }
+                    }
+                    const resDisplay = document.getElementById('res-display');
+                    if (resDisplay) resDisplay.innerText = `${nativeW}x${nativeH} • ${fps} FPS`;
+                }
+
+                // Update Live Counts in Sidebar
+                const zoneStats = data.zones || {};
+                const currentStats = zoneStats[currentVal] || []; // Array of {name, count}
+
+                currentStats.forEach(stat => {
+                    // Remove "C0: " prefix if present
+                    const cleanName = stat.name.replace(/C\d+:\s*/, '');
+                    const el = document.getElementById(`count-${cleanName.replace(/\s+/g, '-')}`);
+                    if (el) {
+                        el.innerText = stat.count;
+                        // Optional: Highlight if over threshold? 
+                        // Need threshold from local 'zones' array.
+                        const configZone = zones.find(z => z.name === cleanName);
+                        if (configZone && stat.count > configZone.threshold) {
+                            el.classList.remove('text-emerald-400');
+                            el.classList.add('text-red-500');
+                        } else {
+                            el.classList.add('text-emerald-400');
+                            el.classList.remove('text-red-500');
+                        }
+                    }
+                });
+
+                // Update SVG ViewBox
+                const svg = document.querySelector('svg');
+                if (svg) {
+                    svg.setAttribute('viewBox', `0 0 ${nativeW} ${nativeH}`);
+                }
+
+                // Rebuild only if keys differ to prevent UI jank, 
+                // but usually fine to just update stats text?
+                // For safety, let's just rebuild if count differs or force update text.
+                // Simplified: Rebuild always for now.
+
+                select.innerHTML = '';
+                const keys = Object.keys(cams);
+                if (keys.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.value = "0";
+                    opt.text = "Camera 0 (Default)";
+                    select.appendChild(opt);
+                } else {
+                    keys.forEach(k => {
+                        const opt = document.createElement('option');
+                        opt.value = k;
+                        opt.text = `Camera ${parseInt(k) + 1} (${cams[k].resolution}, ${cams[k].fps} FPS)`;
+                        select.appendChild(opt);
+                    });
+                }
+
+                if (keys.includes(currentVal)) select.value = currentVal;
+
+            } catch (e) {
+                console.error("Load Cams Error", e);
+            }
+        }
+
+        // --- Fetch Zones ---
+        async function loadZones() {
+            try {
+                const select = document.getElementById('cam-select');
+                const source = select ? select.value : '0';
+
+                const res = await fetch(`${API_BASE}/admin/zones?source=${source}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                // data.configured_zones is { "Zone ID": { ... } }
+                zones = Object.values(data.configured_zones).map(z => ({
+                    name: z.name, // Ensure name is set
+                    id: z.name,
+                    threshold: z.threshold || 10,
+                    coords: JSON.parse(z.points_json || '[]')
+                }));
+                renderSidebar();
+                renderOverlay();
+            } catch (e) {
+                console.error("Load Zones Error", e);
+            }
+        }
+
+        function updateFeed() {
+            const select = document.getElementById('cam-select');
+            const source = select ? select.value : '0';
+            const img = document.getElementById('live-feed-img');
+            if (img) {
+                img.src = `${API_BASE}/video_feed/${source}`;
+            }
+            // Reload zones for this source
+            loadZones();
+        }
+
+        async function saveZones() {
+            const select = document.getElementById('cam-select');
+            const source = select ? select.value : '0';
+
+            try {
+                const payload = {
+                    action: 'save_zones',
+                    source: source,
+                    zones: zones.map(z => ({
+                        name: z.name,
+                        threshold: parseInt(z.threshold),
+                        coords: z.coords
+                    }))
+                };
+
+                const res = await fetch(`${API_BASE}/admin/zones/config`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert('Zones Saved for Camera ' + (parseInt(source) + 1));
+                } else {
+                    alert('Save Failed');
+                }
+            } catch (e) {
+                alert('Error saving zones');
+            }
+        }
+
+        // --- Render Sidebar ---
+        function renderSidebar() {
+            const list = document.querySelector('.p-4.space-y-3.flex-1');
+            if (!list) return;
+
+            list.innerHTML = '';
+            if (zones.length === 0) {
+                list.innerHTML = '<div class="text-center text-slate-500 mt-10 text-sm">No zones. Draw one!</div>';
+                return;
+            }
+
+            zones.forEach((z, idx) => {
+                const el = document.createElement('div');
+                el.className = `group flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:border-primary transition-all ${activeZone === z ? 'bg-primary/10 border-primary' : 'bg-surface-dark border-border-dark'}`;
+                el.onclick = () => { activeZone = z; renderSidebar(); renderOverlay(); updatePropertiesPanel(); };
+                el.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                         <div class="flex items-center justify-between">
+                            <span class="text-sm font-bold text-white">${z.name}</span>
+                            <div class="flex items-center gap-2">
+                                <span id="count-${z.name.replace(/\s+/g, '-')}" class="text-xs font-mono font-bold text-emerald-400">--</span>
+                                <div class="w-2 h-2 rounded-full ${activeZone === z ? 'bg-primary' : 'bg-slate-500'}"></div>
+                            </div>
+                         </div>
+                         <p class="text-xs text-slate-500">Points: ${z.coords.length} | Cap: ${z.threshold}</p>
+                    </div>
+                    <button onclick="deleteZone(${idx}, event)"
+                        class="p-1.5 rounded-md hover:bg-white/10 text-slate-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Zone">
+                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                    </button>
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        // --- Delete Single Zone ---
+        window.deleteZone = function (idx, e) {
+            if (e) {
+                e.stopPropagation();
+                if (e.target.tagName === 'BUTTON' || e.target.parentElement.tagName === 'BUTTON') {
+                    // Ensure we don't trigger row selection
+                }
+            }
+
+            if (confirm(`Delete ${zones[idx].name}?`)) {
+                if (activeZone === zones[idx]) activeZone = null;
+                zones.splice(idx, 1);
+                renderSidebar();
+                renderOverlay();
+                updatePropertiesPanel();
+            }
+        };
+
+        // --- Drag & Draw State (Rectangle) ---
+        let draggingPoint = null;
+        let drawingMode = false;
+        let updatingZone = null; // Track if we are editing an existing zone
+        let startPoint = null;
+        let currentPoint = null;
+
+        function startDrawing() {
+            drawingMode = true;
+            updatingZone = null;
+            startPoint = null;
+            currentPoint = null;
+            activeZone = null;
+            setDrawingCursor();
+            updateUIForDrawing(true);
+
+            // Open Properties Panel
+            const panel = document.getElementById('properties-panel');
+            if (panel) panel.classList.remove('hidden');
+        }
+
+        function startRedraw() {
+            if (!activeZone) return;
+            drawingMode = true;
+            updatingZone = activeZone;
+            startPoint = null;
+            currentPoint = null;
+            setDrawingCursor();
+            updateUIForDrawing(true);
+
+            // Open Properties Panel
+            const panel = document.getElementById('properties-panel');
+            if (panel) panel.classList.remove('hidden');
+        }
+
+        function setDrawingCursor() {
+            document.body.style.cursor = 'crosshair';
+        }
+
+        function updateUIForDrawing(isDrawing) {
+            const btnPoly = document.getElementById('btn-draw-poly');
+            if (btnPoly) {
+                if (isDrawing) {
+                    btnPoly.classList.add('bg-primary/40', 'text-white');
+                    btnPoly.classList.remove('bg-primary/20', 'text-primary');
+                } else {
+                    btnPoly.classList.remove('bg-primary/40', 'text-white');
+                    btnPoly.classList.add('bg-primary/20', 'text-primary');
+                }
+            }
+            updatePropertiesPanel();
+            renderSidebar();
+            renderOverlay();
+        }
+
+        // --- Render Overlay ---
+        function renderOverlay() {
+            const svg = document.querySelector('svg');
+            if (!svg) return;
+
+            svg.innerHTML = '';
+
+            // 1. Draw Existing Zones
+            zones.forEach(z => {
+                // If we are redrawing this specific zone, skip rendering its old rect
+                if (updatingZone === z) return;
+
+                const isActive = (activeZone === z);
+
+                // Assuming z.coords is [x1, y1, x2, y2]
+                let x1, y1, x2, y2;
+                if (Array.isArray(z.coords) && z.coords.length === 4) {
+                    [x1, y1, x2, y2] = z.coords;
+                } else if (Array.isArray(z.coords) && z.coords.length > 0 && Array.isArray(z.coords[0])) {
+                    // Fallback for old polygons: simple bounding box
+                    const xs = z.coords.map(p => p[0]);
+                    const ys = z.coords.map(p => p[1]);
+                    x1 = Math.min(...xs); x2 = Math.max(...xs);
+                    y1 = Math.min(...ys); y2 = Math.max(...ys);
+                } else {
+                    return; // Invalid
+                }
+
+                const w = x2 - x1;
+                const h = y2 - y1;
+
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", x1);
+                rect.setAttribute("y", y1);
+                rect.setAttribute("width", w);
+                rect.setAttribute("height", h);
+                rect.setAttribute("fill", isActive ? "rgba(19, 127, 236, 0.4)" : "rgba(255, 255, 255, 0.35)");
+                rect.setAttribute("stroke", isActive ? "#137fec" : "rgba(255,255,255,0.6)");
+                rect.setAttribute("stroke-width", isActive ? "3" : "2");
+                rect.style.cursor = "pointer";
+
+                if (!drawingMode) {
+                    rect.onmousedown = (e) => {
+                        e.stopPropagation();
+                        if (activeZone !== z) {
+                            activeZone = z;
+                            renderSidebar();
+                            renderOverlay();
+                            updatePropertiesPanel();
+                        }
+                    };
+                }
+                svg.appendChild(rect);
+
+                if (z.id) {
+                    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    txt.setAttribute("x", x1);
+                    txt.setAttribute("y", y1 - 8);
+                    txt.setAttribute("fill", "white");
+                    txt.setAttribute("font-size", "14");
+                    txt.setAttribute("font-weight", "bold");
+                    txt.style.textShadow = "0px 1px 3px black";
+                    txt.style.pointerEvents = "none";
+                    txt.textContent = z.name;
+                    svg.appendChild(txt);
+                }
+            });
+
+            // 2. Draw Drafting Rect
+            if (drawingMode && startPoint && currentPoint) {
+                const x1 = Math.min(startPoint[0], currentPoint[0]);
+                const y1 = Math.min(startPoint[1], currentPoint[1]);
+                const w = Math.abs(currentPoint[0] - startPoint[0]);
+                const h = Math.abs(currentPoint[1] - startPoint[1]);
+
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", x1);
+                rect.setAttribute("y", y1);
+                rect.setAttribute("width", w);
+                rect.setAttribute("height", h);
+                rect.setAttribute("fill", "rgba(6, 182, 212, 0.3)"); // Cyan
+                rect.setAttribute("stroke", "#06b6d4");
+                rect.setAttribute("stroke-width", "2");
+                rect.setAttribute("stroke-dasharray", "5,5"); // Dashed
+                svg.appendChild(rect);
+            }
+        }
+
+        // --- Properties Panel Sync ---
+        function updatePropertiesPanel() {
+            const nameInput = document.getElementById('prop-name');
+            const thresInput = document.getElementById('prop-threshold');
+            const btnRedrawTop = document.getElementById('btn-redraw-top');
+
+            if (activeZone) {
+                if (nameInput) nameInput.value = activeZone.name;
+                if (thresInput) thresInput.value = activeZone.threshold;
+                if (btnRedrawTop) {
+                    btnRedrawTop.disabled = false;
+                    btnRedrawTop.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+                // Open panel if zone selected
+                const panel = document.getElementById('properties-panel');
+                if (panel) panel.classList.remove('hidden');
+            } else {
+                if (nameInput) nameInput.value = "No Zone Selected";
+                if (thresInput) thresInput.value = "";
+                if (btnRedrawTop) {
+                    btnRedrawTop.disabled = true;
+                    btnRedrawTop.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        }
+
+        // --- On Load Binding ---
+        window.onload = () => {
+            loadZones();
+            loadCameras();
+            setInterval(loadCameras, 1000);
+
+            // Bind Top Save Button
+            const saveBtnTop = document.getElementById('btn-save-top');
+            if (saveBtnTop) saveBtnTop.onclick = saveZones;
+
+            // Bind Toolbar Buttons
+            const btnPoly = document.getElementById('btn-draw-poly');
+            if (btnPoly) btnPoly.onclick = () => {
+                if (!drawingMode) startDrawing();
+            };
+
+            const btnUndo = document.getElementById('btn-undo');
+            if (btnUndo) btnUndo.onclick = () => {
+                if (zones.length > 0) {
+                    // Check if last action was drawing
+                    // Use simple pop for now
+                    if (confirm("Undo last zone creation?")) {
+                        zones.pop();
+                        activeZone = null;
+                        renderSidebar();
+                        renderOverlay();
+                    }
+                }
+            };
+
+            const btnClear = document.getElementById('btn-clear-all');
+            if (btnClear) btnClear.onclick = () => {
+                if (confirm("Delete ALL zones? This cannot be undone.")) {
+                    zones = [];
+                    activeZone = null;
+                    drawingMode = false;
+                    renderSidebar();
+                    renderOverlay();
+                    updatePropertiesPanel();
+                }
+            };
+
+            // Bind SVG Events
+            const svg = document.querySelector('svg');
+            if (svg) {
+                svg.onmousedown = (e) => {
+                    if (drawingMode) {
+                        const rect = svg.getBoundingClientRect();
+                        const scaleX = nativeW / rect.width;
+                        const scaleY = nativeH / rect.height;
+                        const x = Math.round((e.clientX - rect.left) * scaleX);
+                        const y = Math.round((e.clientY - rect.top) * scaleY);
+                        startPoint = [x, y];
+                        currentPoint = [x, y];
+                        renderOverlay();
+                    }
+                };
+
+                svg.onmousemove = (e) => {
+                    const rect = svg.getBoundingClientRect();
+                    const scaleX = nativeW / rect.width;
+                    const scaleY = nativeH / rect.height;
+                    const x = (e.clientX - rect.left) * scaleX;
+                    const y = (e.clientY - rect.top) * scaleY;
+
+                    if (drawingMode && startPoint) {
+                        currentPoint = [x, y];
+                        renderOverlay();
+                    }
+                };
+
+                // Mouse Up (End Drag)
+                svg.onmouseup = () => {
+                    if (drawingMode && startPoint && currentPoint) {
+                        // Create zone
+                        const x1 = Math.round(Math.min(startPoint[0], currentPoint[0]));
+                        const y1 = Math.round(Math.min(startPoint[1], currentPoint[1]));
+                        const x2 = Math.round(Math.max(startPoint[0], currentPoint[0]));
+                        const y2 = Math.round(Math.max(startPoint[1], currentPoint[1]));
+
+                        if (Math.abs(x2 - x1) > 10 && Math.abs(y2 - y1) > 10) {
+
+                            if (updatingZone) {
+                                // Update Existing
+                                updatingZone.coords = [x1, y1, x2, y2];
+                                activeZone = updatingZone; // Keep selected
+                                // Name and Threshold remain same
+                                console.log("Updated Zone Geometry");
+                            } else {
+                                // Create New
+                                zones.push({
+                                    name: `Zone ${zones.length + 1}`,
+                                    threshold: 20,
+                                    coords: [x1, y1, x2, y2]
+                                });
+                                activeZone = zones[zones.length - 1];
+                            }
+
+                            drawingMode = false;
+                            updatingZone = null;
+                            startPoint = null;
+                            currentPoint = null;
+                            document.body.style.cursor = 'default';
+
+                            updateUIForDrawing(false);
+                            updatePropertiesPanel();
+                            renderSidebar();
+                            renderOverlay();
+
+                            // Focus name only if NEW zone
+                            if (!updatingZone) {
+                                setTimeout(() => {
+                                    const nameInput = document.getElementById('prop-name');
+                                    if (nameInput) {
+                                        nameInput.focus();
+                                        nameInput.select();
+                                    }
+                                }, 50);
+                            }
+                        } else {
+                            // Too small, cancel
+                            startPoint = null;
+                            renderOverlay();
+                        }
+                    }
+                    draggingPoint = null;
+                };
+
+                svg.onclick = null;
+                svg.onmouseleave = () => { draggingPoint = null; };
+            }
+
+            // Bind Inputs
+            const nameInput = document.getElementById('prop-name');
+            if (nameInput) {
+                nameInput.oninput = (e) => {
+                    if (activeZone) {
+                        activeZone.name = e.target.value;
+                        renderSidebar();
+                        // Update label in overlay too
+                        renderOverlay();
+                    }
+                };
+            }
+
+            const thresInput = document.getElementById('prop-threshold');
+            if (thresInput) {
+                // Use 'change' or 'input'. 'input' is smoother.
+                thresInput.oninput = (e) => {
+                    if (activeZone) {
+                        activeZone.threshold = parseInt(e.target.value) || 0;
+                        renderSidebar();
+                    }
+                };
+            }
+
+            // Cam Select matches ID now
+            const camSelect = document.getElementById('cam-select');
+            if (camSelect) {
+                camSelect.onchange = updateFeed;
+            }
+        };
+
+
+    </script>
+</body>
+
+</html>

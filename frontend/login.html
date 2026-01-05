@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Login/Signup - Crowd Sense AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased transition-colors duration-200">
+    <div class="min-h-screen flex w-full">
+        <!-- Left Panel: Visual/Hero -->
+        <div class="hidden lg:flex w-1/2 relative bg-[#111a22] flex-col justify-between overflow-hidden">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0 z-0">
+                <div class="w-full h-full bg-cover bg-center opacity-60 mix-blend-overlay"
+                    data-alt="Abstract digital heatmap visualization of crowd movement in a futuristic city"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD2PdNIScR6LPfd58m14r_6ZDkYhP697NDoqhjqE8wUb4B0FsjiaoKqDHUe49Qt3Q6fWsXW8p2eXX--v8knVFkTQLu_BGd5AtM_uIjSVzl7gXqhMLGtP0duq-dRkE3Z5iztuXZR6CSokCf-uZPs2aH1QvI-p3xiuJ5m3x9or1bHvfnmYbkd8jlLqexAZC_Eud4yyD16JL-ej5SRCmKpASsdDQDh0j54NhptFyzRBLRcVHZEON6hoI64H0J9AVfaksjZ5xRKIYRcGA");'>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#101922] via-[#101922]/80 to-transparent"></div>
+            </div>
+            <!-- Logo -->
+            <div class="relative z-10 px-12 py-10 flex items-center gap-4 text-white">
+                <div class="size-8">
+                    <svg class="w-full h-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path clip-rule="evenodd"
+                            d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z"
+                            fill="currentColor" fill-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h2 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">Crowd Sense AI</h2>
+            </div>
+            <!-- Content -->
+            <div class="relative z-10 px-12 pb-16">
+                <h1 class="text-white text-5xl font-bold leading-tight tracking-tight mb-6">
+                    Intelligent Crowd Analytics
+                </h1>
+                <p class="text-gray-300 text-lg leading-relaxed max-w-xl mb-8">
+                    Real-time video analysis for safer, smarter spaces. Monitor density, flow, and safety compliance
+                    with our advanced computer vision algorithms.
+                </p>
+                <div class="flex items-center gap-3 text-sm font-medium text-gray-400">
+                    <span class="material-symbols-outlined text-primary">verified_user</span>
+                    <span>Enterprise Grade Security</span>
+                    <span class="w-1 h-1 bg-gray-500 rounded-full mx-2"></span>
+                    <span>99.9% Uptime</span>
+                </div>
+            </div>
+        </div>
+        <!-- Right Panel: Login Form -->
+        <div
+            class="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-12 bg-background-light dark:bg-background-dark transition-colors">
+            <!-- Mobile Logo (visible only on small screens) -->
+            <div class="lg:hidden flex items-center gap-3 mb-8 text-gray-900 dark:text-white">
+                <div class="size-6">
+                    <svg class="w-full h-full" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path clip-rule="evenodd"
+                            d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z"
+                            fill="currentColor" fill-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold leading-tight">Crowd Sense AI</h2>
+            </div>
+            <div class="w-full max-w-[480px]">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome Back</h2>
+                    <p class="text-gray-500 dark:text-[#92adc9]">Enter your details to access your dashboard.</p>
+                </div>
+                <!-- Role Switcher -->
+                <div class="mb-8">
+                    <div class="flex p-1 bg-gray-200 dark:bg-[#233648] rounded-lg">
+                        <label class="flex-1 cursor-pointer">
+                            <input checked="" class="peer sr-only" name="role" type="radio" value="user" />
+                            <div
+                                class="py-2.5 text-center text-sm font-medium text-gray-500 dark:text-[#92adc9] rounded-md transition-all duration-200 peer-checked:bg-white dark:peer-checked:bg-[#111a22] peer-checked:text-primary dark:peer-checked:text-white peer-checked:shadow-sm">
+                                User Portal
+                            </div>
+                        </label>
+                        <label class="flex-1 cursor-pointer">
+                            <input class="peer sr-only" name="role" type="radio" value="admin" />
+                            <div
+                                class="py-2.5 text-center text-sm font-medium text-gray-500 dark:text-[#92adc9] rounded-md transition-all duration-200 peer-checked:bg-white dark:peer-checked:bg-[#111a22] peer-checked:text-primary dark:peer-checked:text-white peer-checked:shadow-sm">
+                                Admin Console
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <!-- Form Inputs -->
+                <!-- Form Inputs -->
+                <form class="flex flex-col gap-5" id="loginForm">
+                    <div id="error-alert" class="hidden p-3 bg-red-100 text-red-700 rounded-lg text-sm"></div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-[#92adc9]">Username</label>
+                        <div class="relative">
+                            <input id="username"
+                                class="w-full bg-white dark:bg-[#192633] border border-gray-300 dark:border-[#324d67] text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full pl-4 p-3.5 placeholder-gray-400 dark:placeholder-[#5b6b7f]"
+                                placeholder="admin" required="" type="text" />
+                            <span
+                                class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#5b6b7f] text-xl pointer-events-none">person</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-[#92adc9]">Password</label>
+                        <div class="relative">
+                            <input id="password"
+                                class="w-full bg-white dark:bg-[#192633] border border-gray-300 dark:border-[#324d67] text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full pl-4 p-3.5 placeholder-gray-400 dark:placeholder-[#5b6b7f]"
+                                placeholder="••••••••" required="" type="password" />
+                            <span
+                                class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#5b6b7f] text-xl cursor-pointer hover:text-gray-600 dark:hover:text-white">visibility_off</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-1">
+                        <div class="flex items-center">
+                            <input
+                                class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary dark:bg-[#192633] dark:border-[#324d67] dark:focus:ring-primary text-primary"
+                                id="remember-me" type="checkbox" />
+                            <label class="ml-2 text-sm font-medium text-gray-600 dark:text-[#92adc9]"
+                                for="remember-me">Remember me</label>
+                        </div>
+                        <a class="text-sm font-semibold text-primary hover:text-blue-500 hover:underline"
+                            href="#">Forgot password?</a>
+                    </div>
+                    <button
+                        class="w-full text-white bg-primary hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-sm px-5 py-3.5 text-center dark:bg-primary dark:hover:bg-blue-600 dark:focus:ring-blue-800 transition-colors mt-2"
+                        type="submit">
+                        Log In
+                    </button>
+                </form>
+
+                <script>
+                    const API_BASE = 'http://127.0.0.1:5001';
+
+                    // --- UI Toggle Logic ---
+                    function toggleAuthMode() {
+                        const loginForm = document.getElementById('loginForm');
+                        const signupForm = document.getElementById('signupForm');
+                        const toggleText = document.getElementById('toggleText');
+                        const title = document.querySelector('h2.text-3xl');
+                        const subtitle = document.querySelector('p.text-gray-500');
+                        const social = document.querySelector('.relative.flex.py-2');
+                        const socialButtons = document.querySelector('.grid.grid-cols-2');
+
+                        if (loginForm.classList.contains('hidden')) {
+                            // Show Login
+                            loginForm.classList.remove('hidden');
+                            signupForm.classList.add('hidden');
+                            // social.classList.remove('hidden');
+                            // socialButtons.classList.remove('hidden');
+                            title.innerText = 'Welcome Back';
+                            subtitle.innerText = 'Enter your details to access your dashboard.';
+                            toggleText.innerHTML = 'New to the platform? <a class="font-medium text-primary hover:underline cursor-pointer" onclick="toggleAuthMode()">Create an account</a>';
+                        } else {
+                            // Show Signup
+                            loginForm.classList.add('hidden');
+                            signupForm.classList.remove('hidden');
+                            // social.classList.add('hidden');
+                            // socialButtons.classList.add('hidden');
+                            title.innerText = 'Create Account';
+                            subtitle.innerText = 'Register for a new account.';
+                            toggleText.innerHTML = 'Already have an account? <a class="font-medium text-primary hover:underline cursor-pointer" onclick="toggleAuthMode()">Log In</a>';
+                        }
+                    }
+
+                    // --- Role Logic for Signup ---
+                    document.querySelectorAll('input[name="role"]').forEach(radio => {
+                        radio.addEventListener('change', (e) => {
+                            const adminKeyField = document.getElementById('adminKeyField');
+                            if (e.target.value === 'admin') {
+                                adminKeyField.classList.remove('hidden');
+                            } else {
+                                adminKeyField.classList.add('hidden');
+                            }
+                        });
+                    });
+
+                    // --- LOGIN Logic ---
+                    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const username = document.getElementById('username').value;
+                        const password = document.getElementById('password').value;
+                        const errorDiv = document.getElementById('error-alert');
+                        const btn = e.target.querySelector('button');
+
+                        try {
+                            btn.innerHTML = 'Signing In...';
+                            btn.disabled = true;
+
+                            const res = await fetch(`${API_BASE}/admin/auth/login`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ username, password })
+                            });
+
+                            const data = await res.json();
+
+                            if (res.ok) {
+                                localStorage.setItem('token', data.token);
+                                localStorage.setItem('role', data.role);
+                                localStorage.setItem('username', data.username);
+                                window.location.href = 'dashboard.html';
+                            } else {
+                                throw new Error(data.msg || "Login failed");
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            errorDiv.innerText = err.message;
+                            errorDiv.classList.remove('hidden');
+                            btn.innerHTML = 'Log In';
+                            btn.disabled = false;
+                        }
+                    });
+
+                    // --- SIGNUP Logic ---
+                    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const username = document.getElementById('signup-username').value;
+                        const password = document.getElementById('signup-password').value;
+                        const role = document.querySelector('input[name="role"]:checked').value;
+                        const adminKey = document.getElementById('signup-admin-key').value;
+                        const errorDiv = document.getElementById('error-alert'); // Shared error div
+                        const btn = e.target.querySelector('button');
+
+                        try {
+                            btn.innerHTML = 'Creating Account...';
+                            btn.disabled = true;
+
+                            const payload = { username, password, role };
+                            if (role === 'admin') payload.admin_key = adminKey;
+
+                            const res = await fetch(`${API_BASE}/admin/auth/signup`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+
+                            const data = await res.json();
+
+                            if (res.ok) {
+                                alert("Account created successfully! Please log in.");
+                                toggleAuthMode(); // Switch back to login
+                                document.getElementById('username').value = username; // Pre-fill login
+                            } else {
+                                throw new Error(data.msg || "Signup failed");
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            errorDiv.innerText = err.message;
+                            errorDiv.classList.remove('hidden');
+                            // Ensure error is visible by scrolling or moving it if needed in signup mode
+                            e.target.prepend(errorDiv);
+                        } finally {
+                            btn.innerHTML = 'Create Account';
+                            btn.disabled = false;
+                        }
+                    });
+                </script>
+
+                </form>
+                <!-- Toggle Text -->
+                <p class="text-sm font-light text-gray-500 dark:text-gray-400 mt-8 text-center" id="toggleText">
+                    New to the platform? <a class="font-medium text-primary hover:underline cursor-pointer"
+                        onclick="toggleAuthMode()">Create an account</a>
+                </p>
+
+                <!-- Signup Form (Hidden by default) -->
+                <form class="flex flex-col gap-5 hidden" id="signupForm">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-[#92adc9]">Full Name</label>
+                        <div class="relative">
+                            <input id="signup-fullname"
+                                class="w-full bg-white dark:bg-[#192633] border border-gray-300 dark:border-[#324d67] text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full pl-4 p-3.5 placeholder-gray-400 dark:placeholder-[#5b6b7f]"
+                                placeholder="John Doe" type="text" />
+                            <span
+                                class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#5b6b7f] text-xl pointer-events-none">badge</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-[#92adc9]">Username</label>
+                        <div class="relative">
+                            <input id="signup-username"
+                                class="w-full bg-white dark:bg-[#192633] border border-gray-300 dark:border-[#324d67] text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full pl-4 p-3.5 placeholder-gray-400 dark:placeholder-[#5b6b7f]"
+                                placeholder="johndoe" required="" type="text" />
+                            <span
+                                class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#5b6b7f] text-xl pointer-events-none">person</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-[#92adc9]">Password</label>
+                        <div class="relative">
+                            <input id="signup-password"
+                                class="w-full bg-white dark:bg-[#192633] border border-gray-300 dark:border-[#324d67] text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full pl-4 p-3.5 placeholder-gray-400 dark:placeholder-[#5b6b7f]"
+                                placeholder="••••••••" required="" type="password" />
+                        </div>
+                    </div>
+                    <!-- Admin Key (Only for Admin Role) -->
+                    <div class="flex flex-col gap-2 hidden" id="adminKeyField">
+                        <label class="text-sm font-medium text-gray-700 dark:text-[#92adc9]">Admin Key</label>
+                        <div class="relative">
+                            <input id="signup-admin-key"
+                                class="w-full bg-white dark:bg-[#192633] border border-gray-300 dark:border-[#324d67] text-gray-900 dark:text-white text-sm rounded-lg focus:ring-primary focus:border-primary block w-full pl-4 p-3.5 placeholder-gray-400 dark:placeholder-[#5b6b7f]"
+                                placeholder="Enter Admin Secret" type="password" />
+                            <span
+                                class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#5b6b7f] text-xl pointer-events-none">vpn_key</span>
+                        </div>
+                    </div>
+                    <button
+                        class="w-full text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-4 focus:outline-none focus:ring-emerald-300 font-bold rounded-lg text-sm px-5 py-3.5 text-center transition-colors mt-2"
+                        type="submit">
+                        Create Account
+                    </button>
+                </form>
+                <div class="mt-8 text-center">
+                    <p class="text-xs text-gray-400 dark:text-[#5b6b7f]">© 2024 Crowd Sense AI. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

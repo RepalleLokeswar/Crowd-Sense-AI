@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Analytics and Reports - Crowd Sense AI</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "card-dark": "#182430",
+                        "card-light": "#ffffff",
+                        "text-subtle": "#92adc9",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for dark theme dashboard */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #101922;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #233648;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #324d67;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden">
+    <div class="flex h-screen w-full">
+        <!-- Sidebar -->
+        <div
+            class="w-64 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark flex flex-col justify-between p-4">
+            <div class="flex flex-col gap-8">
+                <div class="flex flex-col px-2">
+                    <h1 class="text-xl font-bold leading-normal text-slate-900 dark:text-white">Crowd Sense AI</h1>
+                    <p class="text-slate-500 dark:text-text-subtle text-xs font-normal">Video Analysis System</p>
+                </div>
+                <nav class="flex flex-col gap-2">
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-text-subtle hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group"
+                        href="dashboard.html">
+                        <span
+                            class="material-symbols-outlined text-slate-400 dark:text-text-subtle group-hover:text-primary transition-colors">dashboard</span>
+                        <p class="text-sm font-medium">Dashboard</p>
+                    </a>
+                    <a id="nav-cameras"
+                        class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-text-subtle hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group"
+                        href="cameras.html">
+                        <span
+                            class="material-symbols-outlined text-slate-400 dark:text-text-subtle group-hover:text-primary transition-colors">videocam</span>
+                        <p class="text-sm font-medium">Cameras</p>
+                    </a>
+                    <a id="nav-zones"
+                        class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-text-subtle hover:bg-slate-100 dark:hover:bg-card-dark transition-colors group"
+                        href="zones.html">
+                        <span
+                            class="material-symbols-outlined text-slate-400 dark:text-text-subtle group-hover:text-primary transition-colors">location_on</span>
+                        <p class="text-sm font-medium">Zones</p>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary"
+                        href="analytics.html">
+                        <span class="material-symbols-outlined fill-1">analytics</span>
+                        <p class="text-sm font-bold">Analytics</p>
+                    </a>
+
+                    <!-- Logout -->
+                    <button onclick="logout()"
+                        class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-text-subtle hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 transition-colors group mt-4">
+                        <span class="material-symbols-outlined group-hover:text-red-600">logout</span>
+                        <p class="text-sm font-medium">Log Out</p>
+                    </button>
+                </nav>
+            </div>
+            <div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-text-subtle">
+                <span class="material-symbols-outlined">account_circle</span>
+                <div class="flex flex-col">
+                    <p class="text-sm font-medium" id="user-display">User</p>
+                    <p class="text-xs" id="role-display">Role</p>
+                </div>
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+            <!-- Header -->
+            <header
+                class="flex-shrink-0 px-8 py-6 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-background-dark/95 backdrop-blur-sm z-10">
+                <div class="flex flex-wrap items-end justify-between gap-4">
+                    <div class="flex flex-col gap-1">
+                        <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Analytics &amp;
+                            Insights</h2>
+                        <p class="text-slate-500 dark:text-text-subtle text-sm">Daily crowd metrics, performance
+                            reports, and trend analysis.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <!-- Date Picker Mockup -->
+                        <!-- Date Picker -->
+                        <div class="relative">
+                            <input type="date" id="date-picker" onchange="handleDateChange(this.value)"
+                                class="pl-10 pr-4 py-2 bg-white dark:bg-card-dark border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:border-primary focus:outline-none focus:border-primary transition-colors cursor-pointer" />
+                            <span
+                                class="material-symbols-outlined text-[20px] text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">calendar_today</span>
+                        </div>
+                        <button onclick="downloadReport(this)"
+                            class="flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[20px]">download</span>
+                            <span>Download Report</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            <!-- Scrollable Dashboard Area -->
+            <main class="flex-1 overflow-y-auto p-8 pb-20">
+                <div class="max-w-[1400px] mx-auto flex flex-col gap-6">
+                    <!-- KPI Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div
+                            class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <p class="text-slate-500 dark:text-text-subtle text-sm font-medium">Total Footfall</p>
+                                <div class="p-2 bg-primary/10 rounded-lg">
+                                    <span class="material-symbols-outlined text-primary text-[20px]">groups</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-bold text-slate-900 dark:text-white mb-1">1,245</h3>
+                                <div class="flex items-center gap-1">
+                                    <!--<span
+                                        class="material-symbols-outlined text-emerald-500 text-[16px]">trending_up</span>
+                                    <span class="text-emerald-500 text-sm font-medium">+12%</span>
+                                    <span class="text-slate-400 text-sm ml-1">vs yesterday</span>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <p class="text-slate-500 dark:text-text-subtle text-sm font-medium">Peak Occupancy</p>
+                                <div class="p-2 bg-purple-500/10 rounded-lg">
+                                    <span class="material-symbols-outlined text-purple-500 text-[20px]">timer</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-bold text-slate-900 dark:text-white mb-1">340</h3>
+                                <div class="flex items-center gap-1">
+                                    <!--<span
+                                        class="material-symbols-outlined text-emerald-500 text-[16px]">trending_up</span>
+                                    <span class="text-emerald-500 text-sm font-medium">+5%</span>
+                                    <span class="text-slate-400 text-sm ml-1">at 14:00 PM</span>-->
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-card-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <p class="text-slate-500 dark:text-text-subtle text-sm font-medium">Avg Dwell Time</p>
+                                <div class="p-2 bg-orange-500/10 rounded-lg">
+                                    <span class="material-symbols-outlined text-orange-500 text-[20px]">schedule</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-bold text-slate-900 dark:text-white mb-1">12m 30s</h3>
+                                <div class="flex items-center gap-1">
+                                    <!--<span
+                                        class="material-symbols-outlined text-rose-500 text-[16px]">trending_down</span>
+                                    <span class="text-rose-500 text-sm font-medium">-2%</span>
+                                    <span class="text-slate-400 text-sm ml-1">vs average</span>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Main Chart Section -->
+                    <div
+                        class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Hourly Crowd Trend</h3>
+                                <p class="text-slate-500 dark:text-text-subtle text-sm">Visitor distribution throughout
+                                    the day</p>
+                            </div>
+                            <div class="flex bg-slate-100 dark:bg-background-dark rounded-lg p-1">
+                                <button
+                                    class="px-3 py-1 rounded-md bg-white dark:bg-card-dark shadow-sm text-xs font-bold text-slate-900 dark:text-white">Hourly</button>
+                                <button
+                                    class="px-3 py-1 rounded-md text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-text-subtle dark:hover:text-white">Daily</button>
+                                <button
+                                    class="px-3 py-1 rounded-md text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-text-subtle dark:hover:text-white">Weekly</button>
+                            </div>
+                        </div>
+                        <!-- Chart Bars Visualization -->
+                        <div class="h-64 w-full flex items-end justify-between gap-2 px-2">
+                            <!-- Y-axis Labels (Simulated) -->
+                            <div
+                                class="absolute left-10 md:left-14 flex flex-col justify-between h-56 text-xs text-slate-400 font-mono pointer-events-none opacity-50">
+                                <span>400</span>
+                                <span>300</span>
+                                <span>200</span>
+                                <span>100</span>
+                                <span>0</span>
+                            </div>
+                            <!-- Bar Group -->
+                            <div class="flex-1 flex items-end justify-between h-full pl-8 gap-1 md:gap-3">
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/40 group-hover:bg-primary transition-all"
+                                        style="height: 15%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">08
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/40 group-hover:bg-primary transition-all"
+                                        style="height: 25%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">09
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/50 group-hover:bg-primary transition-all"
+                                        style="height: 45%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">10
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/60 group-hover:bg-primary transition-all"
+                                        style="height: 60%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">11
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/80 group-hover:bg-primary transition-all"
+                                        style="height: 85%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">12
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/70 group-hover:bg-primary transition-all"
+                                        style="height: 75%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">13
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <!-- Peak -->
+                                    <div class="w-full bg-primary group-hover:bg-primary transition-all relative"
+                                        style="height: 95%">
+                                        <div
+                                            class="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                                            340 Visitors</div>
+                                    </div>
+                                    <div
+                                        class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400 font-bold">
+                                        14</div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/70 group-hover:bg-primary transition-all"
+                                        style="height: 70%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">15
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/60 group-hover:bg-primary transition-all"
+                                        style="height: 55%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">16
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/50 group-hover:bg-primary transition-all"
+                                        style="height: 40%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">17
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/40 group-hover:bg-primary transition-all"
+                                        style="height: 30%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">18
+                                    </div>
+                                </div>
+                                <div
+                                    class="group relative flex-1 bg-slate-100 dark:bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                                    <div class="w-full bg-primary/30 group-hover:bg-primary transition-all"
+                                        style="height: 20%"></div>
+                                    <div class="absolute -bottom-6 w-full text-center text-[10px] text-slate-400">19
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="h-6"></div> <!-- Spacer for axis labels -->
+                    </div>
+                    <!-- Bottom Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Demographic Chart -->
+                        <div
+                            class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 flex flex-col">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6">Demographic Split</h3>
+                            <div class="flex-1 flex items-center gap-8">
+                                <!-- Donut Chart SVG (CSS drawn) -->
+                                <div class="relative w-40 h-40 flex-shrink-0">
+                                    <svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+                                        <!-- Ring 1 (Background) -->
+                                        <path class="text-slate-100 dark:text-slate-800"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none" stroke="currentColor" stroke-width="3"></path>
+                                        <!-- Ring 2 (Male) -->
+                                        <path class="text-primary"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none" stroke="currentColor" stroke-dasharray="55, 100"
+                                            stroke-width="3"></path>
+                                        <!-- Ring 3 (Female) -->
+                                        <path class="text-purple-500"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none" stroke="currentColor" stroke-dasharray="35, 100"
+                                            stroke-dashoffset="-55" stroke-width="3"></path>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                        <span class="text-2xl font-bold text-slate-900 dark:text-white">100%</span>
+                                        <span class="text-xs text-slate-400">Total</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-4 flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 rounded-full bg-primary"></div>
+                                            <span
+                                                class="text-sm font-medium text-slate-700 dark:text-slate-300">Male</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">55%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                                            <span
+                                                class="text-sm font-medium text-slate-700 dark:text-slate-300">Female</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">35%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-3 h-3 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+                                            <span
+                                                class="text-sm font-medium text-slate-700 dark:text-slate-300">Unknown</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Top Entrances List -->
+                        <div
+                            class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 flex flex-col">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Traffic Source</h3>
+                                <a class="text-sm text-primary hover:text-primary/80 font-medium" href="#">View Map</a>
+                            </div>
+                            <div class="flex flex-col gap-5">
+                                <div class="group">
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">North
+                                            Gate</span>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">45%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-primary h-full rounded-full" style="width: 45%"></div>
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">East
+                                            Wing</span>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">32%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-blue-400 h-full rounded-full" style="width: 32%"></div>
+                                    </div>
+                                </div>
+                                <div class="group">
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">South
+                                            Gate</span>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">23%</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-blue-300 h-full rounded-full" style="width: 23%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Activity Logs Section -->
+                <div
+                    class="mt-8 bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex flex-col gap-1">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">User Activity Logs</h3>
+                            <p class="text-slate-500 dark:text-text-subtle text-sm">Recent system access and login
+                                events</p>
+                        </div>
+                        <button onclick="updateLogs()"
+                            class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                            <span class="material-symbols-outlined text-slate-500 text-[20px]">refresh</span>
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="border-b border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-text-subtle uppercase tracking-wider">
+                                    <th class="py-3 px-4 font-semibold">Timestamp</th>
+                                    <th class="py-3 px-4 font-semibold">User</th>
+                                    <th class="py-3 px-4 font-semibold">Event</th>
+                                    <th class="py-3 px-4 font-semibold">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body" class="text-sm">
+                                <!-- Logs will be injected here -->
+                                <tr>
+                                    <td colspan="4" class="py-4 text-center text-slate-500 italic">Loading logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+        </div>
+    </div>
+    <script>
+        const API_BASE = 'http://127.0.0.1:5001';
+
+        // --- Auth & RBAC Logic ---
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+
+        if (!token) window.location.href = 'login.html';
+
+        // Display User Info
+        if (username) document.getElementById('user-display').innerText = username;
+        if (role) document.getElementById('role-display').innerText = role === 'admin' ? 'Administrator' : 'User';
+
+        // Hide Prohibited Links
+        if (role !== 'admin') {
+            const zonesLink = document.getElementById('nav-zones');
+            const settingsLink = document.getElementById('nav-settings');
+            const camerasLink = document.getElementById('nav-cameras');
+            if (zonesLink) zonesLink.classList.add('hidden');
+            if (settingsLink) settingsLink.classList.add('hidden');
+            if (camerasLink) camerasLink.classList.add('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize Date Picker to Today
+        const datePicker = document.getElementById('date-picker');
+        datePicker.valueAsDate = new Date();
+
+        let selectedDate = new Date().toISOString().split('T')[0];
+
+        function handleDateChange(val) {
+            selectedDate = val;
+            updateAnalytics();
+        }
+
+        async function updateAnalytics() {
+            try {
+                // Fetch Full Analytics Report (Real Data)
+                const res = await fetch(`${API_BASE}/analytics/full_report?date=${selectedDate}`);
+                const report = await res.json();
+
+                if (!res.ok) throw new Error("Failed to fetch analytics");
+
+                // 1. KPIs
+                // Total Footfall (Live from dashboard or db? Let's use live for consistency)
+                // The report endpoint also could return this, but let's stick to live source for consistency if available,
+                // OR better, trust the report if it aggregates everything. 
+                // Report has: peak_occupancy, avg_occupancy
+                // We still need Total Footfall. Let's fetch live count for that.
+                const resLive = await fetch(`${API_BASE}/get_count`);
+                const liveData = await resLive.json();
+
+                // KPI 1: Total Footfall
+                document.querySelectorAll('h3.text-3xl.font-bold')[0].innerText = (liveData.total_visitors || 0).toLocaleString();
+
+                // KPI 2: Peak Occupancy (Real)
+                document.querySelectorAll('h3.text-3xl.font-bold')[1].innerText = (report.peak_occupancy || 0).toLocaleString();
+                // Remove hardcoded subtext if needed or keep static for now
+
+                // KPI 3: Avg Occupancy (Replaces Avg Dwell Time)
+                document.querySelectorAll('h3.text-3xl.font-bold')[2].innerText = Math.round(report.avg_occupancy || 0).toLocaleString();
+                // Update Label to "Avg Occupancy"
+                document.querySelectorAll('p.text-sm.font-medium')[2].innerText = "Avg Occupancy";
+
+                // 2. Main Chart (Hourly Trend)
+                if (report.hourly_trend) {
+                    const bars = document.querySelectorAll('.group.relative.flex-1 .w-full.transition-all');
+                    const hourStart = 8;
+
+                    // Determine Max for Y-Axis Scale (Stable)
+                    const visibleValues = report.hourly_trend.slice(8, 20); // 08:00 to 19:00
+                    let dataMax = Math.max(...visibleValues);
+                    if (dataMax < 10) dataMax = 10; // Floor
+
+                    // Define preferred steps for cleaner axis
+                    const steps = [10, 20, 30, 40, 50, 80, 100, 150, 200, 300, 400, 500, 800, 1000, 1500, 2000, 5000];
+                    let targetMax = steps.find(s => s >= dataMax) || (Math.ceil(dataMax / 1000) * 1000);
+
+                    // Hysteresis: Don't drop scale immediately to prevent jitter
+                    // Only drop if dataMax is < 80% of current scale for stability? 
+                    // Actually, simpler: Use a global or static var. 
+                    // Since this is inside async function, we need a persistent var outside.
+                    if (typeof window.chartScaleMax === 'undefined') window.chartScaleMax = targetMax;
+
+                    if (targetMax > window.chartScaleMax) {
+                        // Grow immediately
+                        window.chartScaleMax = targetMax;
+                    } else if (targetMax < window.chartScaleMax) {
+                        // Shrink only if significantly lower to avoid "breathing"
+                        // If target is less than 70% of current, create a new baseline?
+                        // Or just let it update but smoothly?
+                        // Let's stick to the computed target for responsiveness but the STEPS prevent 19->21 jumps (20->30).
+                        // With steps [20, 30], 19->20, 21->30. Still a jump.
+                        // Let's just use the targetMax directly for now, the steps are better than powers of 10.
+                        window.chartScaleMax = targetMax;
+                    }
+
+                    const maxVal = window.chartScaleMax;
+
+                    // Update Y-Axis Labels
+                    const yAxisDiv = document.querySelector('.absolute.left-10.md\\:left-14');
+                    if (yAxisDiv) {
+                        // Ensure we don't constantly re-write if unchanged to prevent reflow flickering
+                        const newHTML = `
+                            <span>${maxVal}</span>
+                            <span>${Math.round(maxVal * 0.75)}</span>
+                            <span>${Math.round(maxVal * 0.5)}</span>
+                            <span>${Math.round(maxVal * 0.25)}</span>
+                            <span>0</span>
+                        `;
+                        if (yAxisDiv.innerHTML.trim() !== newHTML.trim().replace(/\s+/g, ' ')) {
+                            yAxisDiv.innerHTML = newHTML;
+                        }
+                    }
+
+                    // Render Bars
+                    bars.forEach((bar, idx) => {
+                        const hour = hourStart + idx; // 8, 9, 10...
+                        if (hour < 24) {
+                            const val = report.hourly_trend[hour] || 0;
+                            const pct = (val / maxVal) * 100;
+
+                            bar.style.height = `${Math.max(2, pct)}%`; // Min 2% visibility
+
+                            // Tooltip
+                            const tip = bar.parentElement.querySelector('.absolute.z-10'); // Hidden tooltip
+                            if (tip) tip.innerText = `${val} Avg`;
+
+                            // Label
+                            const labelDiv = bar.parentElement.querySelector('.absolute.-bottom-6');
+                            // Keep hour label as is
+                        }
+                    });
+                }
+
+                // 3. Zone Distribution (Donut & List)
+                // We need to render the donut and the list based on real zones.
+                // Re-rendering the entire "Demographic Split" card content is safest.
+                // Renaming card to "Zone Distribution"
+                document.querySelector('h3.mb-6').innerText = "Zone Distribution";
+
+                const distContainer = document.querySelector('.flex-1.flex.items-center.gap-8');
+                if (report.zone_distribution && distContainer) {
+                    let donutHtml = '';
+                    // ... (Complex SVG drawing skipped for brevity, let's list them cleanly)
+                    // Let's just update the list on the right side of donut
+
+                    const listContainer = distContainer.querySelector('.flex.flex-col.gap-4.flex-1');
+                    if (listContainer) {
+                        let listHtml = '';
+                        const colors = ['bg-primary', 'bg-purple-500', 'bg-emerald-500', 'bg-orange-500'];
+
+                        report.zone_distribution.forEach((z, i) => {
+                            const color = colors[i % colors.length];
+                            listHtml += `
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full ${color}"></div>
+                                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${z.name}</span>
+                                </div>
+                                <span class="text-sm font-bold text-slate-900 dark:text-white">${z.pct}% (${z.count})</span>
+                            </div>`;
+                        });
+                        listContainer.innerHTML = listHtml;
+                    }
+                }
+
+                // 4. Busiest Zones (Replaces Traffic Source)
+                const sourceCard = document.querySelectorAll('.bg-white.rounded-xl')[2]; // 3rd card in bottom grid (index 2? no, grid has 2 cols).
+                // Actually "Traffic Source" is element index 2 in bottom grid group?
+                // Let's find by title text
+                const titles = document.querySelectorAll('h3');
+                let trafficCardBody;
+                titles.forEach(t => { if (t.innerText.includes("Traffic Source")) trafficCardBody = t.parentElement.parentElement; });
+
+                if (trafficCardBody && report.zone_distribution) {
+                    trafficCardBody.querySelector('h3').innerText = "Busiest Zones";
+                    // Sort by count desc
+                    const sorted = [...report.zone_distribution].sort((a, b) => b.count - a.count).slice(0, 3);
+                    const listDiv = trafficCardBody.querySelector('.flex.flex-col.gap-5');
+
+                    if (listDiv) {
+                        let html = '';
+                        sorted.forEach(z => {
+                            // Calculate width relative to max
+                            const max = sorted[0].count || 1;
+                            const pct = (z.count / max) * 100;
+                            html += `
+                                <div class="group">
+                                    <div class="flex justify-between items-end mb-1">
+                                        <span class="text-sm font-medium text-slate-700 dark:text-slate-300">${z.name}</span>
+                                        <span class="text-sm font-bold text-slate-900 dark:text-white">${z.count}</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-primary h-full rounded-full" style="width: ${pct}%"></div>
+                                    </div>
+                                </div>`;
+                        });
+                        listDiv.innerHTML = html;
+                    }
+                }
+
+            } catch (e) {
+                console.error("Analytics Error", e);
+            }
+        }
+
+        async function downloadReport(btn) {
+            try {
+                const originalText = btn.innerHTML;
+                btn.innerText = "Downloading...";
+
+                const res = await fetch(`${API_BASE}/admin/export?format=pdf`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "CrowdSense_Analytics_Report.pdf";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    alert("Export Failed");
+                }
+                btn.innerHTML = originalText;
+            } catch (e) {
+                console.error("Download Error", e);
+                alert("Error downloading report");
+                btn.innerHTML = `<span class="material-symbols-outlined text-[20px]">download</span> <span>Download Report</span>`;
+            }
+        }
+
+        async function updateLogs() {
+            try {
+                const res = await fetch(`${API_BASE}/admin/logs`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 403) {
+                    document.getElementById('logs-table-body').innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-500">Access Denied (Admins Only)</td></tr>`;
+                    return;
+                }
+
+                const logs = await res.json();
+                const tbody = document.getElementById('logs-table-body');
+
+                if (!logs || logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-500">No logs found</td></tr>`;
+                    return;
+                }
+
+                let html = '';
+                logs.forEach(log => {
+                    // Highlight login events
+                    const isLogin = log.event.includes("Login");
+                    const icon = isLogin ? 'login' : 'info';
+                    const iconColor = isLogin ? 'text-emerald-500' : 'text-slate-400';
+
+                    html += `
+                    <tr class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td class="py-3 px-4 text-slate-600 dark:text-slate-300 font-mono text-xs">${log.timestamp}</td>
+                        <td class="py-3 px-4 font-medium text-slate-900 dark:text-white">${log.user}</td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined ${iconColor} text-[18px]">${icon}</span>
+                                <span class="text-slate-700 dark:text-slate-200">${log.event}</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-slate-500 dark:text-slate-400">${log.description}</td>
+                    </tr>`;
+                });
+
+                tbody.innerHTML = html;
+
+            } catch (e) {
+                console.error("Logs Fetch Error", e);
+                document.getElementById('logs-table-body').innerHTML = `<tr><td colspan="4" class="py-4 text-center text-red-500">Error loading logs</td></tr>`;
+            }
+        }
+
+        updateAnalytics();
+        updateLogs();
+        setInterval(updateAnalytics, 5000); // Refresh every 5s
+    </script>
+</body>
+
+</html>
