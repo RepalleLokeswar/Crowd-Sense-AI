@@ -1,102 +1,27 @@
 from flask import jsonify, request
 from backend.models import Alert
 from backend.extensions import db
-
-# In-Memory Store for Real-Time Data from Main.py
-live_counts = {
-    "live_count": 0,
-    "people_count": 0,
-    "total_visitors": 0,
-    "zones": {},
-    "cameras": {}
-}
+from backend.state import state # Shared State
 
 class DashboardController:
     @staticmethod
     def update_counts():
+        # Legacy Endpoint Support (Optional, mostly unused now if thread is active)
+        # But we can keep it to allow external updates if needed, pushing to state
         global live_counts
-        from backend.models import Zone, Alert, AnalyticsData
-        import datetime
+        # For simplicity, we just ignore this or map it to state.update if truly needed
+        # But main.py now calls state.update direct.
         
-        try:
-            data = request.get_json()
-            if not data:
-                return jsonify({"status": "ignored"}), 200
-
-            # print(f"DEBUG: Payload received with keys: {list(data.keys())}")
-            live_counts.update(data)
-            
-            # --- Persistence: Update In-Memory Trend History ---
-            global trend_history
-            now_str = datetime.datetime.now().strftime("%H:%M:%S")
-            p_count = live_counts.get('people_count', 0)
-            
-            # Append new point
-            trend_history.append({"time": now_str, "count": p_count})
-            
-            # Prune (Keep last 100 points ~ 3 minutes of 2s updates)
-            if len(trend_history) > 100:
-                trend_history.pop(0)
-
-            # --- Global Occupancy Tracking (Every Minute) ---
-            should_save = False
-            last_global = AnalyticsData.query.filter_by(zone_name='_GLOBAL_OCCUPANCY_').order_by(AnalyticsData.timestamp.desc()).first()
-            
-            if not last_global:
-                should_save = True
-            else:
-                now = datetime.datetime.now()
-                if (now - last_global.timestamp).total_seconds() >= 60:
-                    should_save = True
-            
-            if should_save:
-                # Save global count
-                g_record = AnalyticsData(zone_name='_GLOBAL_OCCUPANCY_', count=live_counts.get('people_count', 0))
-                db.session.add(g_record)
-                db.session.commit()
-
-            # --- Alert Logic ---
-            current_zones = live_counts.get("zones", [])
-            
-            # Handle list or dict format
-            zone_list = []
-            if isinstance(current_zones, dict):
-                for k, v in current_zones.items(): zone_list.extend(v)
-            elif isinstance(current_zones, list):
-                zone_list = current_zones
-            
-            # Load Thresholds
-            db_zones = {z.name: z.threshold for z in Zone.query.all()}
-            
-            for z in zone_list:
-                name = z.get('name', '').replace('C0: ', '').replace('C1: ', '')
-                threshold = db_zones.get(name, 1000)
-                count = z.get('count', 0)
-                
-                if count > threshold:
-                    recent = Alert.query.filter_by(zone_name=name).order_by(Alert.timestamp.desc()).first()
-                    # Fix: Use python datetime for comparison, not SQL func
-                    if not recent or (datetime.datetime.now() - recent.timestamp).total_seconds() > 60:
-                        new_alert = Alert(zone_name=name, message=f"Occupancy exceeded! ({count}/{threshold})")
-                        db.session.add(new_alert)
-                        db.session.commit()
-                        print(f"ALERT: {name} is overcrowded!")
-
-        except Exception as e:
-            print(f"Error in Logic: {e}")
-
-        # Access global queue directly
-        global command_queue
-        cmds = list(command_queue)
-        command_queue.clear()
-        
-        return jsonify({"status": "updated", "commands": cmds}), 200
+        return jsonify({"status": "deprecated, use shared state"}), 200
 
     @staticmethod
     def get_live_data():
         try:
             from backend.models import Alert, Zone
             import datetime
+            
+            # GET FROM SHARED STATE
+            live_counts = state.get_data()
             
             # 1. Alert Count (Last 24h)
             cutoff = datetime.datetime.now() - datetime.timedelta(hours=24)
@@ -107,48 +32,36 @@ class DashboardController:
             live_counts['active_cameras'] = len(live_counts.get('cameras', {}))
             
             # 3. Sync Thresholds from DB (Source of Truth)
-            # This ensures dashboard shows updated thresholds immediately after save
             db_zones = {z.name: z.threshold for z in Zone.query.all()}
             current_zones = live_counts.get("zones", [])
             
-            # Debug Log (Throttle? One per request might be spammy, but useful for one-shot debug)
-            # with open("debug_log.txt", "a") as log:
-            #    log.write(f"Live Sync: DB Zones keys: {list(db_zones.keys())}\n")
-
             def sync_threshold(z_item):
                 if not isinstance(z_item, dict): return
                 raw_name = z_item.get('name', '')
                 
-                # Robust matching: try exact, then exact split, then loose split
+                # Robust matching
                 candidates = [raw_name]
                 if ':' in raw_name:
                     parts = raw_name.split(':')
                     if len(parts) > 1:
-                        candidates.append(parts[1].strip()) # "C1: Name" -> "Name"
+                        candidates.append(parts[1].strip()) 
                 
-                matched = False
                 for c in candidates:
                     if c in db_zones:
-                        old_t = z_item.get('threshold')
-                        new_t = db_zones[c]
-                        z_item['threshold'] = new_t
-                        matched = True
+                        z_item['threshold'] = db_zones[c]
                         break
-                
-                # if not matched:
-                #    with open("debug_log.txt", "a") as log:
-                #        log.write(f"FAILED MATCH: {raw_name} against {list(db_zones.keys())}\n")
 
             if isinstance(current_zones, list):
                 for z in current_zones: sync_threshold(z)
             elif isinstance(current_zones, dict):
+                # Logic to convert dict to flat list for dashboard if needed?
+                # Actually dashboard.html handles both? Let's assume yes or sync deeply
                 for cam_id, z_list in current_zones.items():
                     for z in z_list: sync_threshold(z)
                     
         except Exception as e:
-            with open("debug_log.txt", "a") as log:
-                log.write(f"Live Data Error: {e}\n")
             print(f"Live Data Error: {e}")
+            return jsonify({}), 500
             
         return jsonify(live_counts), 200
 
@@ -199,6 +112,7 @@ class DashboardController:
 
     @staticmethod
     def get_analytics_summary():
+        # ... (analytics logic unchanged, assuming it queries DB)
         try:
             from backend.models import AnalyticsData
             import datetime
@@ -258,7 +172,11 @@ class DashboardController:
             zone_dist = []
             total_current = 0
             current_zones_list = []
+            
+            # Use Shared State for CURRENT zones data
+            live_counts = state.get_data()
             c_zones = live_counts.get("zones", [])
+            
             if isinstance(c_zones, dict):
                  for k, v in c_zones.items(): current_zones_list.extend(v)
             elif isinstance(c_zones, list):
@@ -290,21 +208,15 @@ class DashboardController:
         
     @staticmethod
     def proxy_update_zones():
-        # Proxy 'update_zones' command to Main.py
         pass
 
-# Command Queue for Main.py
-command_queue = []
-# In-Memory Trend History (High Frequency)
-trend_history = []  # List of {"time": str, "count": int}
 
 def get_commands():
-    global command_queue
-    cmds = list(command_queue)
-    command_queue.clear()
-    return jsonify(cmds), 200
+    # Deprecated: usage should go through state manager directly in main.py
+    return jsonify([]), 200
 
 def post_command():
     data = request.get_json()
-    command_queue.append(data)
+    state.queue_command(data)
     return jsonify({"status": "queued"}), 200
+

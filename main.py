@@ -42,12 +42,14 @@ def parse_arguments():
     return parser.parse_args()
 
 # Headless Main Loop for Background Thread
-def run_detection_headless(args_source=None, stop_event=None, headless=True):
+def run_detection_headless(args_source=None, stop_event=None, headless=True, state_manager=None):
     # Parse args if not provided path
     # If called from app.py, args_source is expected (or default)
+    # If state_manager is provided, use it instead of HTTP requests
 
     # Determine source
     raw_source = args_source
+    if raw_source is None: raw_source = "0"
     raw_source = str(raw_source).strip().strip("'").strip('"')
     
     print(f"DEBUG: Detection CWD: {os.getcwd()}")
@@ -104,8 +106,9 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True):
                 found = True
         
     if not sources:
-        print(f"ERROR: No valid sources found for '{raw_source}'")
-        return
+        # Fallback to webcam 0 if nothing valid found, but warn
+        print(f"ERROR: No valid sources found for '{raw_source}'. Fallback to 0.")
+        sources = [0]
 
     print(f"DEBUG: Final Resolved Sources: {sources}")
     
@@ -153,13 +156,6 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True):
     import math
     import numpy as np
     
-    # Import Shared State for Stop Signal
-    # We assume 'milestone4' package is in path (added by app.py)
-    try:
-        from milestone4.backend import state as shared_state
-    except ImportError:
-        shared_state = None
-
     last_update = time.time() # Initialize timer
     last_frame_write = 0
 
@@ -170,14 +166,14 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True):
         if stop_event and stop_event.is_set():
             print("DEBUG: Stop signal received (Direct Event). Exiting detection loop.")
             break
-        elif shared_state and shared_state.stop_event.is_set():
-            print("DEBUG: Stop signal received (Shared State). Exiting detection loop.")
-            break
+        # Also check state_manager stop event if available (redundancy)
+        if state_manager and state_manager.stop_event.is_set():
+             print("DEBUG: Stop signal received (State Manager). Exiting detection loop.")
+             break
             
         try:
             frames = []
             active_sources = 0
-            target_w, target_h = 640, 360
             
             # Use 'active' flag to stop safely if needed? For now Infinite.
             
@@ -192,7 +188,6 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True):
                 if frame is not None:
                     # Enforce standard resolution for web consistency & zone mapping
                     frame = cv2.resize(frame, (640, 360))
-                    target_h, target_w = frame.shape[:2]
                     frame = systems[i].process_frame(frame)
                     
                     # Draw Zones? Yes, for the web view.
@@ -231,7 +226,7 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True):
             if current_total > max_reported_visitors:
                 max_reported_visitors = current_total
 
-            # Send to Backend
+            # Send to Backend / State Manager
             if time.time() - last_update > 0.5: # 2 FPS update
                 last_update = time.time() # Reset timer
                 cam_status = {
@@ -249,37 +244,45 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True):
                    "zones": aggregated_zones_by_cam, 
                    "cameras": cam_status
                 }
-                try:
-                    # Self-post to localhost (where app.py is running)
-                    resp = requests.post("http://127.0.0.1:5001/update_count", json=payload, timeout=0.05)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        cmds = data.get("commands", [])
-                        for cmd in cmds:
-                            action = cmd.get("action")
-                            if action == "save_zones":
-                                for zm in zone_managers: zm.save_zones()
-                            elif action == "clear_zones":
-                                for i, zm in enumerate(zone_managers):
-                                    zm.zones.clear(); systems[i].zones.clear(); zm.save_zones()
-                            elif action == "update_zones":
-                                new_zones = cmd.get("zones", [])
-                                target_cam = cmd.get("cam_id") # e.g. "C1"
+                
+                cmds = []
+                if state_manager:
+                    # Direct Update
+                    state_manager.update(payload)
+                    cmds = state_manager.get_and_clear_commands()
+                else:
+                    try:
+                        # Legacy HTTP Fallback
+                        resp = requests.post("http://127.0.0.1:5001/update_count", json=payload, timeout=0.05)
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            cmds = data.get("commands", [])
+                    except Exception:
+                        pass
+                
+                # Process Commands
+                for cmd in cmds:
+                    action = cmd.get("action")
+                    if action == "save_zones":
+                        for zm in zone_managers: zm.save_zones()
+                    elif action == "clear_zones":
+                        for i, zm in enumerate(zone_managers):
+                            zm.zones.clear(); systems[i].zones.clear(); zm.save_zones()
+                    elif action == "update_zones":
+                        new_zones = cmd.get("zones", [])
+                        target_cam = cmd.get("cam_id") # e.g. "C1"
 
-                                for i, zm in enumerate(zone_managers):
-                                    # If cam_id is provided, only update specific index. C1 -> 0
-                                    current_id_str = f"C{i+1}"
-                                    if target_cam and target_cam != current_id_str:
-                                        continue
-                                        
-                                    zm.zones = []
-                                    for nz in new_zones:
-                                        zm.zones.append({"id": nz["id"], "coords": tuple(nz["coords"]), "threshold": nz.get("threshold", 10)})
-                                    zm.save_zones()
-                                    systems[i].zones = systems[i]._convert_zones(zm.zones)
-
-                except Exception:
-                    pass
+                        for i, zm in enumerate(zone_managers):
+                            # If cam_id is provided, only update specific index. C1 -> 0
+                            current_id_str = f"C{i+1}"
+                            if target_cam and target_cam != current_id_str:
+                                continue
+                                
+                            zm.zones = []
+                            for nz in new_zones:
+                                zm.zones.append({"id": nz["id"], "coords": tuple(nz["coords"]), "threshold": nz.get("threshold", 10)})
+                            zm.save_zones()
+                            systems[i].zones = systems[i]._convert_zones(zm.zones)
 
              # SAVE FRAMES TO DISK (For Web Feed)
             # Save to Project Root where app.py expects them

@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, send_from_directory, request, Response
 import time
+import threading
+from .state import state # Import shared state
 
 # ... (rest of imports)
 
@@ -10,6 +12,13 @@ from flask_jwt_extended import JWTManager
 import os
 import subprocess
 from backend.extensions import db, jwt
+from backend.models import User, Zone, Alert, AnalyticsData
+
+from backend.system_manager import start_unified_detection
+
+def start_detection_background():
+    # Use centralized manager
+    start_unified_detection("0")
 
 def create_app():
     # Frontend is now in ../frontend relative to backend/app.py
@@ -83,9 +92,14 @@ def create_app():
     return app
 
 if __name__ == '__main__':
+    # Start Detection BEFORE App Run if executing directly
+    start_detection_background()
+    
     app = create_app()
+    
+    # Start Persistence Thread
+    from backend.persistence import start_persistence_thread
+    start_persistence_thread(app, interval=30) # 30s for better resolution
+    
     app.run(debug=True, port=5001, use_reloader=False)
 
-
-
-#.venv\Scripts\python.exe" backend/app.py

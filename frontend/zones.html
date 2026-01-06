@@ -87,9 +87,17 @@
             </nav>
             <div class="h-8 w-[1px] bg-slate-200 dark:bg-border-dark mx-2"></div>
             <div class="flex items-center gap-3">
-                <div class="bg-center bg-no-repeat bg-cover rounded-full size-9 border-2 border-slate-200 dark:border-border-dark"
-                    data-alt="User profile avatar image"
-                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCB3w7wDov9_gEHbv7WVNdf47vgxlGljO8hf9NNA9Y4CfnVfEaKSfQ8w2OmaAWXlo9hFebHc5wCHEj41N6tkJRxP1rq_3g5Aw-00551RR3TtV4rbqSCsovqdNH4S3ZRDhlymOdLzwylQhgn22WzCHXorbYix_x81E8isw9ogB9upf9ltTFXVevjJE3uvtOLSJbEFKtI8UiTVtX5d0Mnkl5YQV-bK-uwB7UrUWkCH66GZal1E7HimVOShHRkAk69I2zWOGu__BxR8A");'>
+                <div class="flex items-center gap-3 px-2 py-1 rounded-lg">
+                    <div class="flex flex-col text-right">
+                        <p id="user-display" class="text-sm font-bold text-slate-900 dark:text-white leading-none">User
+                        </p>
+                        <p id="role-display" class="text-xs text-slate-500 dark:text-slate-400 leading-none mt-1">Role
+                        </p>
+                    </div>
+                    <div
+                        class="flex items-center justify-center rounded-full size-9 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ring-2 ring-slate-200 dark:border-border-dark">
+                        <span class="material-symbols-outlined text-[20px]">person</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -226,7 +234,7 @@
                     class="absolute top-4 right-4 w-72 bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark rounded-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300 hidden lg:block">
                     <div
                         class="flex items-center justify-between p-3 border-b border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-black/20">
-                        <span class="text-sm font-bold">Properties: Restricted Area</span>
+                        <span class="text-sm font-bold">Properties:</span>
                         <button onclick="document.getElementById('properties-panel').classList.add('hidden')"
                             class="text-slate-400 hover:text-white"><span
                                 class="material-symbols-outlined text-lg">close</span></button>
@@ -270,12 +278,18 @@
         // --- Auth Check ---
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role'); // Fix: Declare role
+        const username = localStorage.getItem('username');
+
         if (!token) window.location.href = 'login.html';
 
         // --- RBAC Redirect ---
         if (role !== 'admin') {
             window.location.href = 'dashboard.html';
         }
+
+        // Update User Profile Display
+        if (username) document.getElementById('user-display').innerText = username;
+        if (role) document.getElementById('role-display').innerText = role;
 
         let nativeW = 640;
         let nativeH = 360;

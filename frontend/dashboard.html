@@ -122,13 +122,13 @@
                 <!-- User Profile Bottom -->
                 <div
                     class="flex items-center gap-3 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#1c2630]">
-                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 ring-2 ring-slate-200 dark:ring-slate-700"
-                        data-alt="Profile picture of the admin user"
-                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBqa8JATUAUbNYCl7jSW3p5oza7wWJxgWYafvHlKRLlp0-zFowU1QFbeV9l8hrBKb5FFDGuJOzz5uH3GjQwLsuRT502k8_DOgVtTlmSt2V0AXmugyG7IbMd9f0gk0tHQtrtzLN6OLH4-GKEXMbxqY0mrQO-ZunkSv0EZ8qItuiIcpuqmgMS2eVpDBcKRltT0okZNO4ww7oQYIZ3waAHcgBlus-J5Doe9QQMSCjVL60FF1W5qa_HtX_-oHjH3VixVliST2otajvwZw");'>
+                    <div
+                        class="flex items-center justify-center rounded-full size-9 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ring-2 ring-slate-200 dark:ring-slate-700">
+                        <span class="material-symbols-outlined text-[20px]">person</span>
                     </div>
                     <div class="flex flex-col overflow-hidden">
-                        <p class="text-slate-900 dark:text-white text-sm font-bold truncate">Sarah Chen</p>
-                        <p class="text-slate-500 dark:text-slate-400 text-xs truncate">System Admin</p>
+                        <p id="user-display" class="text-slate-900 dark:text-white text-sm font-bold truncate">User</p>
+                        <p id="role-display" class="text-slate-500 dark:text-slate-400 text-xs truncate">Role</p>
                     </div>
                 </div>
             </div>
@@ -455,6 +455,10 @@
         const username = localStorage.getItem('username');
         if (!token) window.location.href = 'login.html';
 
+        // Update User Profile Display
+        if (username) document.getElementById('user-display').innerText = username;
+        if (role) document.getElementById('role-display').innerText = role;
+
         // --- RBAC Logic ---
         if (role !== 'admin') {
             const zonesLink = document.getElementById('nav-zones');
@@ -680,9 +684,12 @@
 
         // Init
         initChart();
-        updateDashboard();
-        setInterval(updateDashboard, 2000); // 2s refresh
+        // --- Loop ---
+        setInterval(updateDashboard, 500); // 2 FPS Live Update
+        updateDashboard(); // Initial call
 
+        // Load Historical Data
+        initChart();
     </script>
 </body>
 

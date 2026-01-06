@@ -70,59 +70,70 @@
 <body
     class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-body h-screen overflow-hidden flex">
     <!-- Sidebar -->
+    <!-- Sidebar -->
     <aside
-        class="w-64 bg-surface-light dark:bg-[#111a22] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 transition-all duration-300">
-        <div class="flex flex-col h-full">
-            <div class="p-6">
-                <div class="flex flex-col">
-                    <h1
-                        class="text-slate-900 dark:text-white text-xl font-display font-bold leading-normal tracking-tight">
-                        Crowd Sense AI</h1>
-                    <p class="text-slate-500 dark:text-[#92adc9] text-xs font-normal leading-normal mt-1">Admin Console
-                        v2.4</p>
-                </div>
-            </div>
-            <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f2d3b] transition-colors group"
-                    href="dashboard.html">
-                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
-                    <span class="text-sm font-medium leading-normal">Dashboard</span>
-                </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:text-white dark:bg-[#233648]"
-                    href="cameras.html">
-                    <span class="material-symbols-outlined text-primary dark:text-primary">videocam</span>
-                    <span class="text-sm font-medium leading-normal">Cameras</span>
-                </a>
-                <a id="nav-zones"
-                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f2d3b] transition-colors group"
-                    href="zones.html">
-                    <span
-                        class="material-symbols-outlined group-hover:text-primary transition-colors">location_on</span>
-                    <span class="text-sm font-medium leading-normal">Zones</span>
-                </a>
-                <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1f2d3b] transition-colors group"
-                    href="analytics.html">
-                    <span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
-                    <span class="text-sm font-medium leading-normal">Analytics</span>
-                </a>
-
-                <!-- Logout -->
-                <button onclick="logout()"
-                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/10 hover:text-red-600 transition-colors group mt-4">
-                    <span class="material-symbols-outlined group-hover:text-red-600">logout</span>
-                    <span class="text-sm font-medium leading-normal">Log Out</span>
-                </button>
-            </nav>
-            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
-                <div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300">
-                    <div
-                        class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
-                        <span class="material-symbols-outlined text-sm">person</span>
+        class="w-64 flex-shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111a22]">
+        <div class="flex h-full flex-col justify-between p-4">
+            <div class="flex flex-col gap-6">
+                <!-- Brand -->
+                <div class="flex items-center gap-3 px-2">
+                    <div class="bg-primary/20 flex items-center justify-center rounded-lg size-10">
+                        <span class="material-symbols-outlined text-primary" style="font-size: 24px;">groups</span>
                     </div>
                     <div class="flex flex-col">
-                        <p class="text-sm font-medium leading-none" id="user-display">User</p>
-                        <p class="text-xs text-slate-500 dark:text-[#92adc9] mt-1" id="role-display">Role</p>
+                        <h1 class="text-slate-900 dark:text-white text-lg font-bold leading-none">Crowd Sense AI
+                        </h1>
+                        <p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Admin Console</p>
                     </div>
+                </div>
+                <!-- Navigation -->
+                <div class="flex flex-col gap-2">
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1c2630] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors group"
+                        href="dashboard.html">
+                        <span class="material-symbols-outlined group-hover:text-primary transition-colors"
+                            style="font-size: 20px;">dashboard</span>
+                        <p class="text-sm font-medium leading-normal">Dashboard</p>
+                    </a>
+                    <a id="nav-cameras"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white shadow-lg shadow-primary/20 transition-all"
+                        href="cameras.html">
+                        <span class="material-symbols-outlined text-white" style="font-size: 20px;">videocam</span>
+                        <p class="text-sm font-semibold leading-normal">Cameras</p>
+                    </a>
+                    <a id="nav-zones"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1c2630] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors group"
+                        href="zones.html">
+                        <span class="material-symbols-outlined group-hover:text-primary transition-colors"
+                            style="font-size: 20px;">location_on</span>
+                        <p class="text-sm font-medium leading-normal">Zones</p>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#1c2630] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors group"
+                        href="analytics.html">
+                        <span class="material-symbols-outlined group-hover:text-primary transition-colors"
+                            style="font-size: 20px;">analytics</span>
+                        <p class="text-sm font-medium leading-normal">Analytics</p>
+                    </a>
+
+                    <!-- Logout Button -->
+                    <button onclick="logout()"
+                        class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors group mt-4">
+                        <span
+                            class="material-symbols-outlined group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors"
+                            style="font-size: 20px;">logout</span>
+                        <p class="text-sm font-medium leading-normal">Log Out</p>
+                    </button>
+                </div>
+            </div>
+            <!-- User Profile Bottom -->
+            <div
+                class="flex items-center gap-3 px-3 py-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#1c2630]">
+                <div
+                    class="flex items-center justify-center rounded-full size-9 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 ring-2 ring-slate-200 dark:ring-slate-700">
+                    <span class="material-symbols-outlined text-[20px]">person</span>
+                </div>
+                <div class="flex flex-col overflow-hidden">
+                    <p id="user-display" class="text-slate-900 dark:text-white text-sm font-bold truncate">User</p>
+                    <p id="role-display" class="text-slate-500 dark:text-slate-400 text-xs truncate">Role</p>
                 </div>
             </div>
         </div>
@@ -206,13 +217,16 @@
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
         const username = localStorage.getItem('username');
+
         if (!token) window.location.href = 'login.html';
 
         // --- RBAC Redirect ---
         if (role !== 'admin') {
+            alert("Admin Access Only"); // Added alert as per instruction's implied change
             window.location.href = 'dashboard.html';
         }
 
+        // Update User Profile Display
         if (username) document.getElementById('user-display').innerText = username;
         if (role) document.getElementById('role-display').innerText = role;
 

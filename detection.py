@@ -144,6 +144,25 @@ class PeopleCountingSystem:
                 Config.FONT_THICKNESS
             )
             
+        # --- CLEANUP: Remove tracks that disappeared (Left frame / Track lost) ---
+        # Get set of currently active global IDs from this frame's tracks
+        current_frame_ids = {
+            self.reid_gallery.get_global_id(t.track_id, None, match_only=True) 
+            for t in tracks if t.is_confirmed()
+        }
+        
+        # Check all zones for stale IDs
+        for zone in self.zones:
+            # Safe copy to iterate
+            active_ids_copy = list(zone.active_ids)
+            for gid in active_ids_copy:
+                # If gid is valid (>=0) and NOT in current tracks, they are gone
+                if gid >= 0 and gid not in current_frame_ids:
+                    # Double check if we can easily map global ID back to verify?
+                    # Since we only store global IDs in zone, this simple check works
+                    # providing get_global_id returns the same consistent ID.
+                    zone.remove_id(gid)
+            
         # Update Heatmap (Batch)
         self.heatmap.update(heatmap_points)
 

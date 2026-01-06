@@ -2,15 +2,15 @@ from flask import jsonify, request
 from flask_jwt_extended import create_access_token
 from backend.models import User, Zone, Alert
 from backend.extensions import db
+from backend.state import state # Shared State
 from werkzeug.security import check_password_hash
 import subprocess
 import sys
 import os
 import json
-from .dashboard_controller import live_counts
 
-# Global process handle
-system_process = None
+# Global process handle deprecated - we use Thread + State now
+# But we can keep variable for compatibility if needed, though it's unused
 
 class AdminController:
     # --- Auth ---
@@ -44,21 +44,17 @@ class AdminController:
     def login():
         try:
             data = request.get_json()
-            print(f"DEBUG LOGIN ATTEMPT: Username='{data.get('username')}' Password='{data.get('password')}'")
+            # print(f"DEBUG LOGIN ATTEMPT: Username='{data.get('username')}' Password='{data.get('password')}'")
             user = User.query.filter_by(username=data.get('username')).first()
             if user and check_password_hash(user.password, data.get('password')):
                  # Role check
                  role = getattr(user, 'role', 'user') # Safe access
                  
-                 print(f"DEBUG: User ID: {user.id} Type: {type(user.id)}")
                  identity_str = str(user.id)
-                 print(f"DEBUG: Identity String: '{identity_str}' Type: {type(identity_str)}")
                  
                  try:
                      token = create_access_token(identity=identity_str, additional_claims={"role": role})
-                     print("DEBUG: Token created successfully")
                  except Exception as token_err:
-                     print(f"DEBUG: Token Creation Failed: {token_err}")
                      raise token_err
                      
                  AdminController.log_event("User Login", f"User '{user.username}' logged in", user=user.username)
@@ -80,50 +76,40 @@ class AdminController:
     # --- System Control ---
     @staticmethod
     def start_system(current_user):
-        global system_process
-        if system_process is None or system_process.poll() is not None:
-            data = request.get_json() or {}
-            source = data.get('source')
-
-            if not source:
-                 return jsonify({"message": "Source is required."}), 400
+        from backend.system_manager import start_unified_detection
+        
+        data = request.get_json() or {}
+        source = data.get('source', '0')
+        
+        msg = start_unified_detection(source)
+        
+        # Check if it was an error message or success
+        if "Error" in msg or "Failed" in msg:
+            return jsonify({"message": msg}), 500
             
-            # Using sys.executable to ensure correct python env
-            cmd = [sys.executable, "-u", "main.py", "--source", str(source), "--headless"]
-            
-            
-            
-            # Redirect Output to Log
-            try:
-                log_file = open("main.log", "w")
-                system_process = subprocess.Popen(cmd, stdout=log_file, stderr=log_file, cwd=os.getcwd())
-                AdminController.log_event("System Start", f"Detection started with source {source}")
-                return jsonify({"message": f"System started with source {source}"}), 200
-            except Exception as e:
-                AdminController.log_event("System Error", f"Failed to start: {str(e)}")
-                return jsonify({"message": f"Failed to start: {str(e)}"}), 500
-        return jsonify({"message": "System already running"}), 400
+        AdminController.log_event("System Start", f"Detection started/resumed with source {source}")
+        return jsonify({"message": msg}), 200
 
     @staticmethod
     def stop_system(current_user):
-        global system_process
-        if system_process and system_process.poll() is None:
-            system_process.terminate()
-            system_process = None
-            AdminController.log_event("System Stop", "Detection process terminated")
-            return jsonify({"message": "System stopped"}), 200
-        return jsonify({"message": "System not running"}), 200
+        # Signal Stop Event
+        if state.detection_thread and state.detection_thread.is_alive():
+            state.stop_event.set()
+            AdminController.log_event("System Stop", "Detection stop signal sent")
+            return jsonify({"message": "Stop signal sent. System stopping..."}), 200
+        else:
+             return jsonify({"message": "System is not running."}), 200
 
     @staticmethod
     def get_system_status(current_user):
-        global system_process
-        is_running = system_process is not None and system_process.poll() is None
+        # We assume running if app is up, or check stop_event
+        is_running = not state.stop_event.is_set()
         return jsonify({"running": is_running}), 200
 
     # --- Camera Management ---
     @staticmethod
     def get_cameras(current_user):
-        return jsonify(live_counts.get("cameras", {})), 200
+        return jsonify(state.get_data().get("cameras", {})), 200
 
     @staticmethod
     def add_camera(current_user):
@@ -146,15 +132,6 @@ class AdminController:
                     zones_data = json.load(f)
             except: pass
             
-        # Ensure format consistency
-        # Frontend expects dictionary keyed by ID or list? 
-        # Existing frontend code: Object.values(data.configured_zones).map... 
-        # let's return a dict to match existing contract if possible, or list if easier.
-        # But wait, we are rewriting frontend too. Let's return a Clean List.
-        # But to minimize frontend breakage during transition, let's see.
-        # The contract in admin_controller was: {"configured_zones": {id: data}, ...}
-        # Let's keep it similar: {id: data}
-        
         formatted_zones = {}
         for z in zones_data:
             zid = str(z.get('id', 'unknown'))
@@ -164,7 +141,7 @@ class AdminController:
                 "threshold": z.get('threshold', 10)
             }
             
-        return jsonify({"configured_zones": formatted_zones, "live_zones": live_counts.get("zones", [])}), 200
+        return jsonify({"configured_zones": formatted_zones, "live_zones": state.get_data().get("zones", [])}), 200
 
     @staticmethod
     def update_zones_config(current_user):
@@ -193,21 +170,11 @@ class AdminController:
                  return jsonify({"message": f"Failed to save file: {e}"}), 500
 
              # 2. Update Database (Source of Truth for Dashboard)
-             from backend.models import Zone
-             from backend.extensions import db
-             
              try:
-                 # Debug Logging
-                 with open("debug_log.txt", "a") as log:
-                     log.write(f"Saving {len(new_zones)} zones to DB for source {source}\n")
-
                  for z_data in new_zones:
                      name = z_data.get('name') or z_data.get('id')
                      threshold = int(z_data.get('threshold', 10))
                      coords = json.dumps(z_data.get('coords', []))
-                     
-                     with open("debug_log.txt", "a") as log:
-                         log.write(f" - Upserting Zone: {name} Threshold: {threshold}\n")
                      
                      zone = Zone.query.filter_by(name=name).first()
                      if zone:
@@ -220,19 +187,14 @@ class AdminController:
                  db.session.commit()
              except Exception as e:
                  print(f"DB Update Error: {e}")
-                 with open("debug_log.txt", "a") as log:
-                     log.write(f"DB Update Error: {e}\n")
-                 # Don't fail the request, but log it.
 
-             # 3. Push Command to Main.py
-             from backend.controllers.dashboard_controller import post_command, command_queue
-             # We can append directly since we are in same package
+             # 3. Push Command via Shared State
              cmd = {
                  "action": "update_zones",
                  "cam_id": f"C{int(source)+1}",
                  "zones": json_zones
              }
-             command_queue.append(cmd)
+             state.queue_command(cmd)
              
              AdminController.log_event("Zones Updated", f"Zone configuration saved for Source {source} ({len(json_zones)} zones)")
              return jsonify({"message": "Zones saved and command queued"}), 200
@@ -247,6 +209,9 @@ class AdminController:
         from flask import make_response
         
         fmt = request.args.get('format', 'csv')
+        
+        # Use Shared State
+        live_counts = state.get_data()
         
         zones = Zone.query.all()
         current_counts = live_counts.get("zones", [])
@@ -334,7 +299,6 @@ class AdminController:
             response.headers["Content-Disposition"] = "attachment; filename=crowd_report.pdf"
             response.headers["Content-type"] = "application/pdf"
             return response
-
         else:
             # CSV Default
             output = io.StringIO()
@@ -351,6 +315,15 @@ class AdminController:
             writer.writerow(['--- Zone Details ---'])
             writer.writerow(['Zone Name', 'Threshold', 'Current Live Count', 'Status'])
             
+            current_zones_data = live_counts.get("zones", {})
+            flattened_zones = []
+            if isinstance(current_zones_data, dict):
+                for k, v in current_zones_data.items(): flattened_zones.extend(v)
+            elif isinstance(current_zones_data, list):
+                flattened_zones = current_zones_data
+            
+            db_zones_map = {z.name: z.threshold for z in Zone.query.all()}
+
             for z_item in flattened_zones:
                 name = z_item.get('name', 'Unknown')
                 count = z_item.get('count', 0)

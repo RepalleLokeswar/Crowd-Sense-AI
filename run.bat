@@ -1,6 +1,5 @@
 @echo off
-:: Restored run.bat
+:: Unified Startup
 start cmd /k "python -m backend.app"
-timeout /t 5
-python main.py
-pause
+timeout /t 2
+echo System Started. Access at http://127.0.0.1:5001
