@@ -61,27 +61,21 @@ def create_app():
     # MJPEG Streaming Route
     @app.route('/video_feed/<id>')
     def video_feed(id):
-        root_dir = os.path.abspath(os.path.join(basedir, '../'))
-        path = os.path.join(root_dir, f"cam_{id}.jpg")
-        
+        # IN-MEMORY STREAMING
         def gen():
-            last_mtime = 0
             while True:
-                if os.path.exists(path):
-                    try:
-                        mtime = os.path.getmtime(path)
-                        if mtime > last_mtime:
-                            last_mtime = mtime
-                            with open(path, 'rb') as f:
-                                frame = f.read()
-                            yield (b'--frame\r\n'
-                                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-                        else:
-                            time.sleep(0.01) # Low latency check
-                    except:
-                        time.sleep(0.1)
-                else:
-                    time.sleep(0.5)
+                try:
+                    # Blocking wait for new frame (efficient)
+                    frame = state.wait_for_frame(id, timeout=1.0)
+                    if frame:
+                        yield (b'--frame\r\n'
+                               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                    else:
+                        # Timeout or no frame yet
+                         time.sleep(0.1)
+                except Exception as e:
+                    print(f"Stream Error: {e}")
+                    time.sleep(1)
 
         return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -93,7 +87,7 @@ def create_app():
 
 if __name__ == '__main__':
     # Start Detection BEFORE App Run if executing directly
-    start_detection_background()
+    # start_detection_background() <--- REMOVED: Auto-start disabled by user request.
     
     app = create_app()
     

@@ -68,4 +68,4 @@
 - `data/`: Storage for configs and models (Note: Large models are git-ignored).
 
 ## 📄 License
-[MIT License](MITLICENSE)
+[MIT License](MIT%20LICENSE)

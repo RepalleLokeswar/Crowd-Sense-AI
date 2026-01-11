@@ -68,30 +68,35 @@ class DashboardController:
     @staticmethod
     def get_analytics():
         try:
-            # Prefer in-memory high-freq history if available
-            # Downsample to 1-minute intervals for cleaner chart
-            global trend_history
+            # Prefer in-memory high-freq history from State
+            history = state.get_history()
             
-            # Helper to downsample
-            def downsample(raw_data, time_key='time', val_key='count'):
-                sampled = {}
-                for item in raw_data:
-                    # Parse time if string, else assume string HH:MM:SS
-                    # We expect HH:MM:SS string in trend_history
-                    t_str = item[time_key] 
-                    # Extract HH:MM
-                    hm = t_str[:5] if len(t_str) >= 5 else t_str
-                    
-                    # Store last value for that minute (most recent)
-                    sampled[hm] = item[val_key]
+            # Helper to format/downsample to 1-minute
+            labels = []
+            data = []
+            
+            # Group by HH:MM
+            grouped = {}
+            
+            # Combine Memory History + DB History (if needed, but let's stick to memory for 'Live Trend')
+            # Actually, for a 1-minute interval, we might want longer history than just the last 100 seconds (RAM).
+            # But sticking to the requested change:
+            
+            if history:
+                 for item in history:
+                     # item['time'] is 'HH:MM:SS'
+                     t_str = item['time']
+                     hm = t_str[:5] # Extract HH:MM
+                     # Overwrite to get the LATEST count for that minute
+                     grouped[hm] = item['count']
+            
+            for t_label, count in grouped.items():
+                labels.append(t_label)
+                data.append(count)
                 
-                return list(sampled.keys()), list(sampled.values())
+            return jsonify({"labels": labels, "data": data}), 200
 
-            if trend_history:
-                labels, data = downsample(trend_history)
-                return jsonify({"labels": labels, "data": data}), 200
-
-            # Fallback
+            # Fallback to DB if history is empty (e.g. freshly started)
             from backend.models import AnalyticsData
             import datetime
             now = datetime.datetime.now()
@@ -101,9 +106,10 @@ class DashboardController:
                 AnalyticsData.timestamp >= start_time
             ).order_by(AnalyticsData.timestamp).all()
             
-            # Convert DB objects to dict for same helper
-            db_data = [{'time': dp.timestamp.strftime('%H:%M:%S'), 'count': dp.count} for dp in data_points]
-            labels, data = downsample(db_data)
+            # Simple downsample for DB data
+            for dp in data_points:
+                labels.append(dp.timestamp.strftime('%H:%M:%S'))
+                data.append(dp.count)
             
             return jsonify({"labels": labels, "data": data}), 200
         except Exception as e:

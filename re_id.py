@@ -11,19 +11,19 @@ import torch
 class Config:
     # ---------------- YOLO / Tracker ----------------
     YOLO_MODEL = "yolov8n.pt"
-    YOLO_CONF = 0.5
+    YOLO_CONF = 0.25 # Lowered from 0.5 to catch more people
     YOLO_CLASSES = [0]
 
     MAX_AGE = 90
-    N_INIT = 3
-    MAX_IOU_DISTANCE = 0.7
+    N_INIT = 1  # Lowered from 3 to 1 to speed up confirmation with frame skipping
+    MAX_IOU_DISTANCE = 0.95 # Relaxed from 0.7 to 0.95 to handle low FPS jumps
 
     # ---------------- Re-ID ----------------
     REID_SIMILARITY_THRESHOLD = 0.65
     REID_GALLERY_SIZE = 5
     # REID_MEMORY_TIME = 300
     REID_MEMORY_TIME = 63072000  # 2 Years
-    REID_CONFIRM_FRAMES = 3
+    REID_CONFIRM_FRAMES = 1 # Lowered from 3 to 1
 
     # ---------------- Drawing ----------------
     FONT = cv2.FONT_HERSHEY_SIMPLEX

@@ -42,6 +42,24 @@ def start_persistence_thread(app, interval=60):
                     db.session.commit()
                     # print(f"DEBUG: Saved Analytics Snapshot: {live_count}")
                     
+                # Save Alerts
+                pending = state.get_and_clear_alerts()
+                if pending:
+                    from .models import Alert
+                    count_saved = 0
+                    for a in pending:
+                         new_alert = Alert(
+                             zone_name=a['zone_name'],
+                             message=a['message'],
+                             # timestamp=a['timestamp'] # Use DB server time or convert
+                         )
+                         db.session.add(new_alert)
+                         count_saved += 1
+                    
+                    if count_saved > 0:
+                        db.session.commit()
+                        print(f"DEBUG: Saved {count_saved} alerts to DB.")
+
             except Exception as e:
                 print(f"ERROR: Persistence Loop Failed: {e}")
                 time.sleep(5) # Backoff

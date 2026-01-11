@@ -158,6 +158,7 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True, sta
     
     last_update = time.time() # Initialize timer
     last_frame_write = 0
+    frame_count = 0
 
 
     # MAIN LOOP
@@ -187,8 +188,20 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True, sta
                 
                 if frame is not None:
                     # Enforce standard resolution for web consistency & zone mapping
-                    frame = cv2.resize(frame, (640, 360))
-                    frame = systems[i].process_frame(frame)
+                    if frame.shape[1] != 640 or frame.shape[0] != 360:
+                        frame = cv2.resize(frame, (640, 360))
+                        
+                    # t0 = time.time()
+                    
+                    # SMART FRAME SKIPPING
+                    # Run YOLO every 2nd frame. 
+                    # This doubles FPS while keeping high accuracy.
+                    # DeepSort PREDICTS positions on the skipped frame.
+                    # run_inference = (frame_count % 2 == 0)
+                    run_inference = True
+                    
+                    frame = systems[i].process_frame(frame, run_inference=run_inference)
+                    # print(f"Processing time: {time.time()-t0:.4f}s | Inference: {run_inference}")
                     
                     # Draw Zones? Yes, for the web view.
                     # We can use the PeopleCountingSystem's internal drawing or ZM
@@ -200,6 +213,8 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True, sta
                     cv2.putText(frame, f"CAM {i+1}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,0), 2)
                     frames.append(frame)
                     active_sources += 1
+            
+            frame_count += 1
             
             if active_sources == 0:
                 break
@@ -233,7 +248,7 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True, sta
                     str(i): {
                         "source": str(src),
                         "resolution": f"{systems[i].imW}x{systems[i].imH}",
-                        "fps": systems[i].fps
+                        "fps": int(systems[i].fps)
                     } for i, src in enumerate(sources)
                 }
                 
@@ -291,19 +306,17 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True, sta
             # This prevents IO bottleneck and keeps "live" feed smooth enough
             # FPS Limiter for Disk Writes (Target ~15-20 FPS for web view)
             # 0.05s = 20 FPS. This reduces IO load significantly.
-            if time.time() - last_frame_write > 0.05:
-                last_frame_write = time.time()
-                ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-                for i, frame in enumerate(frames):
+            # IN-MEMORY STREAMING UPDATE
+            # No longer writing to disk. Encoding to RAM and updating State Manager.
+            if state_manager:
+                 for i, frame in enumerate(frames):
                      try:
-                         temp_path = os.path.join(ROOT_DIR, f"cam_{i}_temp.jpg")
-                         final_path = os.path.join(ROOT_DIR, f"cam_{i}.jpg")
-                         # Encode to buffer first to ensure write isn't blocking (somewhat)
-                         # Actually cv2.imwrite is blocking.
-                         cv2.imwrite(temp_path, frame)
-                         if os.path.exists(temp_path):
-                             os.replace(temp_path, final_path)
-                     except: pass
+                         # Encode to JPG in memory
+                         ret, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+                         if ret:
+                             state_manager.update_frame(i, buffer.tobytes())
+                     except Exception as e:
+                         print(f"Frame Encoding Error: {e}")
 
              # --- SHOW LOCAL WINDOW IF NOT HEADLESS ---
             if not headless:
@@ -331,6 +344,16 @@ def run_detection_headless(args_source=None, stop_event=None, headless=True, sta
     for cap in caps: stop_camera(cap)
     for zm in zone_managers: zm.save_zones()
     shared_gallery.save_compact()
+    
+    if state_manager:
+        print("DEBUG: Clearing System State")
+        state_manager.update({
+            "cameras": {},
+            "active_cameras": 0,
+            "live_count": 0,
+            "people_count": 0,
+            "zones": {} # Optional: clear zones or keep them? better to clear/reset live usage
+        })
 
 # Legacy Entry Point (Optional)
 if __name__ == "__main__":

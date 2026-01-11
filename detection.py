@@ -73,7 +73,7 @@ class PeopleCountingSystem:
         zone_objects = []
         for i, z in enumerate(loaded_zones):
             zone_objects.append(
-                Zone(z["id"], z["coords"], colors[i % len(colors)])
+                Zone(z["id"], z["coords"], colors[i % len(colors)], threshold=z.get("threshold", 10))
             )
         return zone_objects
 
@@ -90,20 +90,50 @@ class PeopleCountingSystem:
         if results and results[0].boxes is not None:
             for box in results[0].boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
+                w = x2 - x1
+                h = y2 - y1
                 conf = float(box.conf[0])
-                detections.append(([x1, y1, x2, y2], conf, "person"))
+                # DeepSort expects [left, top, w, h]
+                detections.append(([x1, y1, w, h], conf, "person"))
 
         return detections
 
-    def process_frame(self, frame):
+    def process_frame(self, frame, run_inference=True):
         """Detection + Tracking + Re-ID + Zone counting"""
+        current_time = time.time()
+        
+        # FPS Calculation
+        if hasattr(self, 'last_time') and self.last_time > 0:
+            dt = current_time - self.last_time
+            if dt > 0:
+                current_fps = 1.0 / dt
+                # Simple smoothing
+                self.fps = 0.9 * self.fps + 0.1 * current_fps
+        self.last_time = current_time
+        
         self.imH, self.imW = frame.shape[:2]
-        detections = self.detect_people(frame)
+        
+        detections = []
+        if run_inference:
+            detections = self.detect_people(frame)
+            
+            # DEBUG: Draw RAW YOLO Detections (Yellow)
+            # for det in detections:
+            #     bbox, conf, _ = det
+            #     rx1, ry1, w, h = bbox
+            #     rx2 = rx1 + w
+            #     ry2 = ry1 + h
+            #     cv2.rectangle(frame, (rx1, ry1), (rx2, ry2), (0, 255, 255), 1)
+            #     # print(f"DEBUG: YOLO Box: {bbox} Conf: {conf:.2f}")
+                
+        # print(f"DEBUG: Sending to tracker: {detections}")
         tracks = self.tracker.update_tracks(detections, frame=frame)
+        # print(f"DEBUG: Tracker returned {len(tracks)} tracks")
 
         heatmap_points = []
         for track in tracks:
-            if not track.is_confirmed():
+            # Show tracks that are confirmed OR have at least 1 hit (immediate feedback)
+            if not track.is_confirmed() and (not hasattr(track, 'hits') or track.hits < 1):
                 continue
 
             track_id = track.track_id
@@ -147,7 +177,7 @@ class PeopleCountingSystem:
         # --- CLEANUP: Remove tracks that disappeared (Left frame / Track lost) ---
         # Get set of currently active global IDs from this frame's tracks
         current_frame_ids = {
-            self.reid_gallery.get_global_id(t.track_id, None, match_only=True) 
+            self.reid_gallery.get_global_id(t.track_id, None) 
             for t in tracks if t.is_confirmed()
         }
         
@@ -191,15 +221,36 @@ class PeopleCountingSystem:
         # Calculate Live Count (Active confirmed tracks in current frame)
         live_count = 0
         for track in tracks:
-             if track.is_confirmed() and track.time_since_update <= 1:
+             # Relax check: since we skip frames, time_since_update might be 1 or 2
+             if (track.is_confirmed() or (hasattr(track, 'hits') and track.hits >= 1)) and track.time_since_update <= 5:
                  live_count += 1
-
+        
+        # DEBUG LOGGING (Enabled)
+        print(f"DEBUG: Inf={run_inference} Dets={len(detections)} Tracks={len(tracks)} Live={live_count} FPS={self.fps:.1f}")
+        for t in tracks:
+            if not t.is_confirmed():
+                print(f"   -> Track {t.track_id} NOT CONFIRMED (hits={t.hits if hasattr(t, 'hits') else '?'}, age={t.age}, prob={t.state})")
+        
         zone_data = []
+        
+        # ALERT CHECK
+        from backend.state import state # Import here to avoid circular init issues if at top
+        
         for z in self.zones:
+            # Check Threshold
+            if z.count > z.threshold:
+                # Cooldown Check (e.g. 60 seconds)
+                if current_time - z.last_alert_time > 60:
+                     msg = f"Zone '{z.id}' Overcrowded! ({z.count}/{z.threshold})"
+                     print(f"!!! ALERT TRIGGERED: {msg}")
+                     state.add_alert(z.id, msg)
+                     z.last_alert_time = current_time
+            
             zone_data.append({
                 "name": z.id,
                 "count": z.count,
-                "coords": z.coords
+                "coords": z.coords,
+                "threshold": z.threshold
             })
 
         self.latest_stats = {

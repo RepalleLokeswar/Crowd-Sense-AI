@@ -9,10 +9,12 @@ def point_inside_rectangle(p, r):
     return x1<=px<=x2 and y1<=py<=y2
 
 class Zone:
-    def __init__(self,id,coords,color):
+    def __init__(self,id,coords,color,threshold=10):
         self.id=id
         self.coords=coords
         self.color=color
+        self.threshold=threshold
+        self.last_alert_time=0 # Timestamp of last alert
         self.total_count=0 # Renamed cumulative
         self.counted_ids=set()
         self.active_ids=set()
@@ -79,8 +81,8 @@ class Zone:
         x1, y1, x2, y2 = map(int, self.coords)
         cv2.rectangle(frame,(x1,y1),(x2,y2),self.color,2)
         
-        # Format: "ZoneName: 5"
-        label = f"{self.id}: {self.count}"
+        # Format: "ZoneName: 5/10"
+        label = f"{self.id}: {self.count}/{self.threshold}"
         
         # Smart Positioning: If box is at top, draw text inside/below
         text_y = y1 - 10

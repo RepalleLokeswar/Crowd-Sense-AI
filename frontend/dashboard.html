@@ -495,31 +495,44 @@
                     borderColor: '#137fec',
                     backgroundColor: gradient,
                     fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    borderWidth: 3
+                    tension: 0.3, // Slightly tighter curve
+                    pointRadius: 0, // No points usually
+                    pointHoverRadius: 4,
+                    borderWidth: 2 // Thinner line
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                animation: { duration: 0 }, // Instant update, no jittery morphing
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(17, 26, 34, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#334155',
+                        borderWidth: 1
+                    }
+                },
                 scales: {
                     x: {
-                        grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
-                        ticks: { color: '#94a3b8', maxTicksLimit: 8, maxRotation: 0 }
+                        grid: { display: false }, // Remove vertical grid
+                        ticks: {
+                            color: '#94a3b8',
+                            maxTicksLimit: 6, // Fewer labels
+                            maxRotation: 0
+                        }
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(51, 65, 85, 0.3)', drawBorder: false },
+                        grid: { color: 'rgba(51, 65, 85, 0.1)', drawBorder: false }, // Faint horizontal
                         ticks: { color: '#94a3b8', precision: 0 }
                     }
                 },
-                elements: {
-                    line: { tension: 0.4 }, // Smooth curves
-                    point: { radius: 0, hitRadius: 10 } // Hide cluttering dots
-                },
-                interaction: { intersect: false, mode: 'index' }
+                interaction: { intersect: false, mode: 'nearest' }
             }
         });
 
@@ -578,6 +591,7 @@
                 lastAlertCount = alerts;
 
                 // 2. Chart Live Update (Push only if new)
+                // 2. Chart Live Update (Push only if new minute)
                 const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: "2-digit", minute: "2-digit" });
                 const lastLabel = mainTrendChart.data.labels[mainTrendChart.data.labels.length - 1];
 
